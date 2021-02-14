@@ -1,18 +1,18 @@
 package cn.lanink.autoresourcechest;
 
-import cn.lanink.autoresourcechest.item.RandomItem;
-import cn.lanink.autoresourcechest.task.AutoRefreshChest;
-import cn.nukkit.item.Item;
-
-import cn.nukkit.level.Level;
-import cn.nukkit.math.Vector3;
+import cn.lanink.autoresourcechest.chest.ChestManager;
+import cn.lanink.autoresourcechest.task.ChestUpdateTask;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
+import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lt_name
@@ -20,16 +20,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AutoResourceChest extends PluginBase {
 
     public static final Random RANDOM = new Random();
+    public static final String VERSION = "0.0.2-Alpha git-417951a";
+    public static boolean debug = false;
+
     private static AutoResourceChest autoResourceChest;
+
+    @Getter
     private Config config;
+    @Getter
+    private Config playerLog;
 
-    private int refreshInterval = 60;
-    private int maximumNumberOfItems = 16;
-
-    private final ArrayList<String> worlds = new ArrayList<>(); //刷新的世界
-    private final ArrayList<RandomItem> randomItems = new ArrayList<>();
-    private final ConcurrentHashMap<Level, ConcurrentHashMap<Vector3, String>> chestLastRefreshTime = new ConcurrentHashMap<>();
-
+    @Getter
+    private Map<String, ChestManager> chestConfigMap = new HashMap<>();
 
     public static AutoResourceChest getInstance() {
         return autoResourceChest;
@@ -38,65 +40,61 @@ public class AutoResourceChest extends PluginBase {
     @Override
     public void onLoad() {
         autoResourceChest = this;
+
+        this.saveDefaultConfig();
+        this.saveResource("playerUseChestLog.yml");
+
+        File file = new File(getDataFolder() + "/Chests");
+        if (!file.exists() && !file.mkdirs()) {
+            this.getLogger().error("Chests 文件夹初始化失败");
+        }
+
+        this.config = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
+        if (config.getBoolean("debug", false)) {
+            debug = true;
+            this.getLogger().warning("§c=========================================");
+            this.getLogger().warning("§c 警告：您开启了debug模式！");
+            this.getLogger().warning("§c Warning: You have turned on debug mode!");
+            this.getLogger().warning("§c=========================================");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ignored) {
+
+            }
+        }
+        this.playerLog = new Config(this.getDataFolder() + "/playerUseChestLog.yml", Config.YAML);
     }
 
     @Override
     public void onEnable() {
-        this.saveDefaultConfig();
-        this.config = this.getConfig();
-        this.worlds.addAll(this.config.getStringList("enableWorlds"));
-        this.refreshInterval = this.config.getInt("refreshInterval", 60);
-        this.maximumNumberOfItems = this.config.getInt("maximumNumberOfItems", 64);
+        this.loadAllChests();
 
-        for (String string : this.config.getStringList("randomItems")) {
-            try {
-                this.randomItems.add(new RandomItem(string));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        this.getServer().getScheduler().scheduleRepeatingTask(this,
+                new ChestUpdateTask(this), 20);
 
-        this.getServer().getScheduler().scheduleRepeatingTask(this, new AutoRefreshChest(this), 100);
+        this.getLogger().info("加载完成！");
     }
 
-    public ArrayList<String> getWorlds() {
-        return this.worlds;
+    @Override
+    public void onDisable() {
+        //TODO
     }
 
-    public int getRefreshInterval() {
-        return this.refreshInterval;
-    }
-
-    public int getMaximumNumberOfItems() {
-        return this.maximumNumberOfItems;
-    }
-
-    public Item[] getRandomItems() {
-        return this.getRandomItems(this.maximumNumberOfItems);
-    }
-
-    public Item[] getRandomItems(int count) {
-        Collections.shuffle(this.randomItems, AutoResourceChest.RANDOM);
-        ArrayList<Item> items = new ArrayList<>();
-        int nowCount = 0;
-        for (RandomItem randomItem : this.randomItems) {
-            Item item = randomItem.getItem();
-            if (item.getId() != 0) {
-                if (item.getCount() >= count) {
-                    item.setCount(Math.max(count/3, 1));
+    public void loadAllChests() {
+        File[] files = (new File(getDataFolder() + "/Chests")).listFiles();
+        int count = 0;
+        if (files != null && files.length > 0) {
+            for (File file : files) {
+                if (!file.isFile()) {
+                    continue;
                 }
-                items.add(item);
-                nowCount += item.getCount();
-            }
-            if (nowCount >= count) {
-                break;
+                String name = file.getName().split("\\.")[0];
+                this.getChestConfigMap().put(name,
+                        new ChestManager(name, new Config(file, Config.YAML)));
+                count++;
             }
         }
-        return items.toArray(new Item[0]);
-    }
-
-    public ConcurrentHashMap<Level, ConcurrentHashMap<Vector3, String>> getChestLastRefreshTime() {
-        return this.chestLastRefreshTime;
+        this.getLogger().info("§a已加载 §e" + count + " §a个箱子配置");
     }
 
 }

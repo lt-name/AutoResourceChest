@@ -1,11 +1,2 @@
-enableWorlds:
-  - "world name 1"
-  - "world name 2"
-#刷新间隔 单位：分钟
-refreshInterval: 60
-maximumNumberOfItems: 16
-# itemID:itemMeta & count & Probability of occurrence
-randomItems:
-  - "332:0&1-16&57"
-  - "267:0&1&33"
-  - "307:0&1&20"
+#
+---
