@@ -1,38 +1,32 @@
-package cn.lanink.autoresourcechest.entity;
+package cn.lanink.autoresourcechest.entity
 
-import cn.nukkit.Player;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.level.Position;
-import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.entity.Entity
+import cn.nukkit.level.Position
+import cn.nukkit.level.format.FullChunk
+import cn.nukkit.nbt.tag.CompoundTag
 
 /**
  * @author lt_name
  */
-public class EntityText extends Entity {
+class EntityText : Entity {
 
-    @Override
-    public int getNetworkId() {
-        return 64;
+    override fun getNetworkId(): Int {
+        return 64
     }
 
-    @Deprecated
-    public EntityText(FullChunk chunk, CompoundTag nbt) {
-        super(chunk, nbt);
-        this.close();
+    @Deprecated("只是为了兼容PN核心")
+    constructor(chunk: FullChunk?, nbt: CompoundTag?) : super(chunk, nbt) {
+        close()
     }
 
-    public EntityText(Position position) {
-        super(position.getChunk(), getDefaultNBT(position));
-    }
+    constructor(position: Position) : super(position.chunk, getDefaultNBT(position)) {}
 
-    @Override
-    protected void initEntity() {
-        super.initEntity();
-        this.setNameTag("");
-        this.setNameTagVisible(true);
-        this.setNameTagAlwaysVisible(true);
-        this.setImmobile();
+    override fun initEntity() {
+        super.initEntity()
+        this.nameTag = ""
+        this.isNameTagVisible = true
+        this.isNameTagAlwaysVisible = true
+        this.setImmobile()
     }
 
 }

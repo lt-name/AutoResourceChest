@@ -1,34 +1,32 @@
-package cn.lanink.autoresourcechest.item;
+package cn.lanink.autoresourcechest.item
 
-import cn.lanink.autoresourcechest.AutoResourceChest;
-import cn.nukkit.item.Item;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import cn.lanink.autoresourcechest.AutoResourceChest.Companion.RANDOM
+import cn.nukkit.item.Item
+import lombok.AllArgsConstructor
+import lombok.EqualsAndHashCode
 
 /**
  * @author lt_name
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-public class RandomItem {
+class RandomItem(string: String) {
 
-    private final Item item;
-    private int probability = 50;
+    private val item: Item
+    private var probability = 50
 
-    public RandomItem(String string) {
-        String[] split = string.split("&");
-        String[] split2 = split[1].split("@");
-        this.item = Item.fromString(split[0]);
-        this.item.setCount(Integer.parseInt(split2[0]));
-
-        this.probability = Integer.parseInt(split2[1]);
+    init {
+        val split = string.split("&")
+        val split2 = split[1].split("@")
+        item = Item.fromString(split[0])
+        item.setCount(split2[0].toInt())
+        probability = split2[1].toInt()
     }
 
-    public Item getItem() {
-        if (AutoResourceChest.RANDOM.nextInt(100) < this.probability) {
-            return this.item.clone();
-        }
-        return null;
+    fun getItem(): Item? {
+        return if (RANDOM.nextInt(100) < probability) {
+            item.clone()
+        } else null
     }
 
 }

@@ -30,7 +30,7 @@ public class ChestManager {
     public Item[] fixedItems;
     public ArrayList<RandomItem> randomItems = new ArrayList<>();
 
-    private final Map<Position, Chest> chests = new HashMap<>();
+    public final Map<Position, Chest> chests = new HashMap<>();
 
     public ChestManager(@NotNull String name, @NotNull Config config) {
         this.name = name;
@@ -80,6 +80,16 @@ public class ChestManager {
             }
         }
         return list.toArray(new Item[0]);
+    }
+
+    public Chest getChestByPos(Position position) {
+        //我们需要比对level
+        for (Map.Entry<Position, Chest> entry : this.getChests().entrySet()) {
+            if (entry.getKey().getLevel() == position.getLevel() && entry.getKey().equals(position)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
 }
