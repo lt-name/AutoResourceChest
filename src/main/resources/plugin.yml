@@ -4,3 +4,5 @@ version: "0.0.3-Alpha"
 api: ["1.0.11"]
 load: POSTWORLD
 author: "LT_Name"
+depend:
+  - "KotlinLib"
