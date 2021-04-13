@@ -85,7 +85,7 @@ class AutoResourceChest : PluginBase() {
     }
 
     companion object {
-
+        @JvmStatic
         val RANDOM = Random()
         const val VERSION = "?"
         var debug = false

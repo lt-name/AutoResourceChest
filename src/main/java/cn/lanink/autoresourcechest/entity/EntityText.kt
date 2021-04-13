@@ -19,7 +19,7 @@ class EntityText : Entity {
         close()
     }
 
-    constructor(position: Position) : super(position.chunk, getDefaultNBT(position)) {}
+    constructor(position: Position) : super(position.chunk, getDefaultNBT(position))
 
     override fun initEntity() {
         super.initEntity()
