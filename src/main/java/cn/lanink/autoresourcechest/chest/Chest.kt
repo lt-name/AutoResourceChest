@@ -25,15 +25,18 @@ class Chest(private val chestManager: ChestManager, private val position: Positi
         time--
         if (time <= 0) {
             time = chestManager.refreshInterval
-            refreshInventory()
-            isCanOpen = true
+            this.refreshInventory()
+            this.isCanOpen = true
         }
         if (text == null || text!!.isClosed) {
             text = EntityText(position)
         }
         text!!.setPosition(position.add(0.5, 1.0, 0.5))
-        text!!.nameTag = chestManager.showName
-            .replace("%time%", formatTime(time))
+        if (this.isCanOpen) {
+            text!!.nameTag = chestManager.showName.replace("%time%", "已刷新")
+        }else {
+            text!!.nameTag = chestManager.showName.replace("%time%", formatTime(time))
+        }
         for (player in text!!.getLevel().players.values) {
             if (player.getLevel() !== text!!.getLevel() || player.distance(position) > 5) {
                 text!!.despawnFrom(player)
@@ -43,7 +46,7 @@ class Chest(private val chestManager: ChestManager, private val position: Positi
         }
     }
 
-    fun refreshInventory() {
+    private fun refreshInventory() {
         var blockEntity = position.getLevel().getBlockEntity(position)
         if (blockEntity !is BlockEntityChest) {
             position.getLevel().setBlock(position, Block.get(Block.CHEST))
