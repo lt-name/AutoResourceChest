@@ -11,37 +11,44 @@ import lombok.EqualsAndHashCode
  * @author lt_name
  */
 @EqualsAndHashCode
-class Chest(private val chestManager: ChestManager, private val position: Position) {
+class Chest(val chestManager: ChestManager, private var position: Position) {
 
-    private var time = 0
-    private var text: EntityText?
-    var isCanOpen = true
+    private var closed: Boolean = false
+    var time = 0
+    private var text: EntityText
+    var isNeedRefresh = false
 
     init {
-        text = EntityText(position)
+        this.text = EntityText(this.position)
     }
 
     fun onUpdate() {
-        time--
-        if (time <= 0) {
-            time = chestManager.refreshInterval
+        if (this.closed) {
+            return
+        }
+        if (this.isNeedRefresh) {
+            this.time--
+        }
+        if (this.time <= 0) {
+            this.time = this.chestManager.refreshInterval
             this.refreshInventory()
-            this.isCanOpen = true
+            this.isNeedRefresh = false
         }
-        if (text == null || text!!.isClosed) {
-            text = EntityText(position)
+        if (this.text.isClosed) {
+            this.text = EntityText(this.position)
         }
-        text!!.setPosition(position.add(0.5, 1.0, 0.5))
-        if (this.isCanOpen) {
-            text!!.nameTag = chestManager.showName.replace("%time%", "已刷新")
+        //仅调整浮空字的位置
+        this.text.setPosition(position.add(0.5, 1.0, 0.5))
+        if (this.isNeedRefresh) {
+            this.text.nameTag = chestManager.showName.replace("%time%", formatTime(time))
         }else {
-            text!!.nameTag = chestManager.showName.replace("%time%", formatTime(time))
+            this.text.nameTag = chestManager.showName.replace("%time%", "已刷新")
         }
-        for (player in text!!.getLevel().players.values) {
-            if (player.getLevel() !== text!!.getLevel() || player.distance(position) > 5) {
-                text!!.despawnFrom(player)
+        for (player in this.text.getLevel().players.values) {
+            if (player.getLevel() !== this.text.getLevel() || player.distance(this.position) > 5) {
+                this.text.despawnFrom(player)
             } else {
-                text!!.spawnTo(player)
+                this.text.spawnTo(player)
             }
         }
     }
@@ -59,6 +66,11 @@ class Chest(private val chestManager: ChestManager, private val position: Positi
         inventory.clearAll()
         inventory.addItem(*chestManager.getFixedItems().toTypedArray())
         inventory.addItem(*chestManager.getRandomItems().toTypedArray())
+    }
+
+    fun close() {
+        this.closed = true
+        this.text.close()
     }
 
 }

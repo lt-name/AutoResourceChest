@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode
  * @author lt_name
  */
 @EqualsAndHashCode
-class ChestManager(val name: String, config: Config) {
+class ChestManager(val name: String, private val config: Config) {
 
     val showName: String = config.getString("showName")
     val refreshInterval: Int = config.getInt("刷新间隔(s)")
@@ -26,23 +26,53 @@ class ChestManager(val name: String, config: Config) {
             val split = stringItem.split("&")
             val item = Item.fromString(split[0])
             item.setCount(split[1].toInt())
-            fixedItems.add(item)
+            this.fixedItems.add(item)
         }
         for (stringItem in config.getStringList("randomItem")) {
-            randomItems.add(RandomItem(stringItem!!))
+            this.randomItems.add(RandomItem(stringItem!!))
         }
         for (pos in config.getStringList("pos")) {
             val split = pos.split(":")
             val position = Position(
-                split[0].toInt().toDouble(), split[1].toInt().toDouble(), split[2].toInt().toDouble(),
+                split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
                 Server.getInstance().getLevelByName(split[3])
             )
-            chests[position] = Chest(this, position);
+            this.chests[position] = Chest(this, position);
         }
     }
 
+    fun saveConfig() {
+        val list = mutableListOf<String>()
+        for (pos in this.chests.keys) {
+            list.add("${pos.x}:${pos.y}:${pos.z}:${pos.level.name}")
+        }
+        this.config.set("pos", list)
+    }
+
+    fun addNewChest(position: Position): Boolean {
+        for (pos in this.chests.keys) {
+            if (pos.getLevel() === position.getLevel() && pos == position) {
+                return false
+            }
+        }
+        val newPos = position.clone()
+        this.chests[newPos] = Chest(this, newPos)
+        return true
+    }
+
+    fun removeChest(chest: Chest): Boolean {
+        for ((key, value) in HashMap(this.chests).entries) {
+            if (value == chest) {
+                this.chests.remove(key)
+                value.close()
+                return true
+            }
+        }
+        return false
+    }
+
     fun getFixedItems(): List<Item> {
-        return ArrayList<Item>(fixedItems)
+        return ArrayList<Item>(this.fixedItems)
     }
 
     fun getRandomItems(): List<Item> {
@@ -60,7 +90,7 @@ class ChestManager(val name: String, config: Config) {
     }
 
     fun getChestByPos(position: Position): Chest? {
-        //我们需要比对level
+        //需要判断level
         for ((key, value) in this.chests.entries) {
             if (key.getLevel() === position.getLevel() && key == position) {
                 return value
