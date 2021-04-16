@@ -47,6 +47,7 @@ class ChestManager(val name: String, private val config: Config) {
             list.add("${pos.x}:${pos.y}:${pos.z}:${pos.level.name}")
         }
         this.config.set("pos", list)
+        this.config.save()
     }
 
     fun addNewChest(position: Position): Boolean {
