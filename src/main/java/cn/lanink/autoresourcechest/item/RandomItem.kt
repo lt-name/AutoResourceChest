@@ -24,9 +24,7 @@ class RandomItem(string: String) {
     }
 
     fun getItem(): Item? {
-        return if (RANDOM.nextInt(100) < probability) {
-            item.clone()
-        } else null
+        return if (RANDOM.nextInt(100) < probability) item.clone() else null
     }
 
 }

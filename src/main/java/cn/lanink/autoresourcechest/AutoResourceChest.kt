@@ -3,6 +3,9 @@ package cn.lanink.autoresourcechest
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.chest.ChestManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
+import cn.nukkit.Player
+import cn.nukkit.command.Command
+import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
@@ -19,6 +22,15 @@ class AutoResourceChest : PluginBase() {
     private var playerLog: Config? = null
 
     val chestConfigMap: HashMap<String, ChestManager> = HashMap()
+    val placeChestPlayer: HashMap<Player, ChestManager> = HashMap();
+
+    companion object {
+        @JvmStatic
+        val RANDOM = Random()
+        const val VERSION = "?"
+        var debug = false
+        var instance: AutoResourceChest? = null
+    }
 
     override fun onLoad() {
         instance = this
@@ -55,7 +67,71 @@ class AutoResourceChest : PluginBase() {
     }
 
     override fun onDisable() {
-        //TODO
+
+    }
+
+    override fun onCommand(
+        sender: CommandSender?,
+        command: Command?,
+        label: String?,
+        args: Array<out String>?
+    ): Boolean {
+        sender ?: return false
+        command ?: return false
+        if (command.name == "autoresourcechest" || command.name == "arc") {
+            if (!sender.isPlayer) {
+                sender.sendMessage("§e>> §c请在游戏内使用此命令")
+                return true
+            }
+            if (args.isNullOrEmpty()) {
+                this.sendCommandHelp(sender)
+                return true
+            }
+            val player: Player = sender as Player;
+
+            when(args[0]) {
+                "create" -> {
+                    if (args.size > 1) {
+                        val name = args[1]
+                        if (File("$dataFolder/Chests/$name.yml").exists()) {
+                            sender.sendMessage("§e>> §c已存在名为 $name 的资源箱配置！")
+                            return true
+                        }
+                        this.saveResource("Chests/Chest.yml", "Chests/$name.yml", true);
+                        this.chestConfigMap[name] = ChestManager(name, Config("$dataFolder/Chests/$name.yml", Config.YAML))
+                        sender.sendMessage("§e>> §a新的资源箱配置 $name 创建成功！")
+                    }else {
+                        sender.sendMessage("§e>> §c请输入资源箱名字！")
+                    }
+                }
+
+                "place" -> {
+                    if (args.size > 1) {
+                        val name = args[1]
+                        val chestManager = this.chestConfigMap[name]
+                        if (chestManager == null) {
+                            sender.sendMessage("§e>> §c不存在名为 $name 的资源箱配置，请先创建！")
+                            return true
+                        }
+                        this.placeChestPlayer[player] = chestManager;
+                        sender.sendMessage("§e>> §a请放置一个箱子作为资源箱！")
+                    }else {
+                        sender.sendMessage("§e>> §c请输入资源箱名字！")
+                    }
+                }
+
+                else -> {
+                    this.sendCommandHelp(sender)
+                }
+            }
+            return true;
+        }
+        return false
+    }
+
+    private fun sendCommandHelp(sender: CommandSender) {
+        sender.sendMessage("§a/arc create <配置名称> §e创建一个资源箱配置\n" +
+                "§a/arc place <配置名称> §e放置一个资源箱")
     }
 
     private fun loadAllChests() {
@@ -66,12 +142,12 @@ class AutoResourceChest : PluginBase() {
                 if (!file.isFile) {
                     continue
                 }
-                val name = file.name.split("\\.")[0]
-                this.chestConfigMap.put(name, ChestManager(name, Config(file, Config.YAML)))
+                val name = file.name.split(".")[0]
+                this.chestConfigMap[name] = ChestManager(name, Config(file, Config.YAML))
                 count++
             }
         }
-        logger.info("§a已加载 §e$count §a个箱子配置")
+        logger.info("§a已加载 §e$count §a个资源箱配置")
     }
 
     fun getChestByPos(position: Position): Chest? {
@@ -82,14 +158,6 @@ class AutoResourceChest : PluginBase() {
             }
         }
         return null
-    }
-
-    companion object {
-        @JvmStatic
-        val RANDOM = Random()
-        const val VERSION = "?"
-        var debug = false
-        var instance: AutoResourceChest? = null
     }
 
 }
