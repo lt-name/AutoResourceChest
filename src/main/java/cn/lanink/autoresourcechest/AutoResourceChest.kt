@@ -2,6 +2,7 @@ package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.chest.ChestManager
+import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
 import cn.nukkit.Player
 import cn.nukkit.command.Command
@@ -19,6 +20,8 @@ class AutoResourceChest : PluginBase() {
 
     val chestConfigMap: HashMap<String, ChestManager> = HashMap()
     val placeChestPlayer: HashMap<Player, ChestManager> = HashMap()
+
+    val playerConfigManager = PlayerConfigManager(this)
 
     companion object {
         @JvmStatic
@@ -70,6 +73,7 @@ class AutoResourceChest : PluginBase() {
             chestManager.saveConfig()
             chestManager.closeAllChest()
         }
+        this.playerConfigManager.saveAllPlayerConfig()
     }
 
     override fun onCommand(

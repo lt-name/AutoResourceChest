@@ -63,6 +63,14 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
         val block = event.block ?: return
         if (block.id == Block.CHEST && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             val chest: Chest = this.autoResourceChest.getChestByPos(block) ?: return
+            val playerConfig = this.autoResourceChest.playerConfigManager.getPlayerConfig(player)
+            if (chest.chestManager.restrictOpenCount > 0) {
+                if (playerConfig.getOpenCount(block) >= chest.chestManager.restrictOpenCount) {
+                    event.setCancelled()
+                    player.sendMessage("§e>> §c您已达到限制打开次数！")
+                    return
+                }
+            }
             if (chest.isNeedRefresh) {
                 if (chest.time <= chest.chestManager.refreshInterval/2) {
                     event.setCancelled()
@@ -70,6 +78,7 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 }
             }else {
                 chest.isNeedRefresh = true
+                playerConfig.addOpenCount(block)
             }
         }
     }

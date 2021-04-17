@@ -15,7 +15,7 @@ class ChestManager(val name: String, private val config: Config) {
 
     val showName: String = config.getString("showName")
     val refreshInterval: Int = config.getInt("刷新间隔(s)")
-    private val restrictOpenCount: Int = config.getInt("限制打开次数", -1)
+    val restrictOpenCount: Int = config.getInt("限制打开次数", -1)
     private val maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
     private var fixedItems: ArrayList<Item> = ArrayList()
     private var randomItems = ArrayList<RandomItem>()
