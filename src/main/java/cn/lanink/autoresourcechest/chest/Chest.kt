@@ -14,12 +14,13 @@ import lombok.EqualsAndHashCode
 class Chest(val chestManager: ChestManager, private var position: Position) {
 
     private var closed: Boolean = false
-    var time = 0
+    var time = this.chestManager.refreshInterval
     private var text: EntityText
     var isNeedRefresh = false
 
     init {
         this.text = EntityText(this.position)
+        this.refreshInventory()
     }
 
     fun onUpdate() {
@@ -28,11 +29,11 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
         }
         if (this.isNeedRefresh) {
             this.time--
-        }
-        if (this.time <= 0) {
-            this.time = this.chestManager.refreshInterval
-            this.refreshInventory()
-            this.isNeedRefresh = false
+            if (this.time <= 0) {
+                this.time = this.chestManager.refreshInterval
+                this.refreshInventory()
+                this.isNeedRefresh = false
+            }
         }
         if (this.text.isClosed) {
             this.text = EntityText(this.position)
@@ -71,6 +72,10 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
     fun close() {
         this.closed = true
         this.text.close()
+        val blockEntity = position.getLevel().getBlockEntity(position)
+        if (blockEntity != null && blockEntity is BlockEntityChest) {
+            blockEntity.inventory.clearAll()
+        }
     }
 
 }

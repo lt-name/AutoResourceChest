@@ -9,7 +9,6 @@ import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
-import lombok.Getter
 import java.io.File
 import java.util.*
 
@@ -18,11 +17,8 @@ import java.util.*
  */
 class AutoResourceChest : PluginBase() {
 
-    @Getter
-    private var playerLog: Config? = null
-
     val chestConfigMap: HashMap<String, ChestManager> = HashMap()
-    val placeChestPlayer: HashMap<Player, ChestManager> = HashMap();
+    val placeChestPlayer: HashMap<Player, ChestManager> = HashMap()
 
     companion object {
         @JvmStatic
@@ -52,7 +48,6 @@ class AutoResourceChest : PluginBase() {
 
             }
         }
-        playerLog = Config("$dataFolder/playerUseChestLog.yml", Config.YAML)
     }
 
     override fun onEnable() {
@@ -67,7 +62,10 @@ class AutoResourceChest : PluginBase() {
     }
 
     override fun onDisable() {
-
+        for (chestManager in this.chestConfigMap.values) {
+            chestManager.saveConfig()
+            chestManager.closeAllChest()
+        }
     }
 
     override fun onCommand(
@@ -87,7 +85,7 @@ class AutoResourceChest : PluginBase() {
                 this.sendCommandHelp(sender)
                 return true
             }
-            val player: Player = sender as Player;
+            val player: Player = sender as Player
 
             when(args[0]) {
                 "create" -> {
@@ -97,7 +95,7 @@ class AutoResourceChest : PluginBase() {
                             sender.sendMessage("§e>> §c已存在名为 $name 的资源箱配置！")
                             return true
                         }
-                        this.saveResource("Chests/Chest.yml", "Chests/$name.yml", true);
+                        this.saveResource("Chests/Chest.yml", "Chests/$name.yml", true)
                         this.chestConfigMap[name] = ChestManager(name, Config("$dataFolder/Chests/$name.yml", Config.YAML))
                         sender.sendMessage("§e>> §a新的资源箱配置 $name 创建成功！")
                     }else {
@@ -113,7 +111,7 @@ class AutoResourceChest : PluginBase() {
                             sender.sendMessage("§e>> §c不存在名为 $name 的资源箱配置，请先创建！")
                             return true
                         }
-                        this.placeChestPlayer[player] = chestManager;
+                        this.placeChestPlayer[player] = chestManager
                         sender.sendMessage("§e>> §a请放置一个箱子作为资源箱！")
                     }else {
                         sender.sendMessage("§e>> §c请输入资源箱名字！")
@@ -124,7 +122,7 @@ class AutoResourceChest : PluginBase() {
                     this.sendCommandHelp(sender)
                 }
             }
-            return true;
+            return true
         }
         return false
     }

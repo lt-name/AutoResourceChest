@@ -54,7 +54,6 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 event.setCancelled()
                 player.sendMessage("§e>> §c您没有权限破坏资源箱！")
             }
-
         }
     }
 
@@ -62,9 +61,8 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
     fun onPlayerInteract(event: PlayerInteractEvent) {
         val player = event.player ?: return
         val block = event.block ?: return
-        val entity = block.level?.getBlockEntity(block) ?: return
-        if (entity is BlockEntityChest) {
-            val chest: Chest = this.autoResourceChest.getChestByPos(entity) ?: return
+        if (block.id == Block.CHEST && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+            val chest: Chest = this.autoResourceChest.getChestByPos(block) ?: return
             if (chest.isNeedRefresh) {
                 if (chest.time <= chest.chestManager.refreshInterval/2) {
                     event.setCancelled()

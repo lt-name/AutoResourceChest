@@ -18,7 +18,7 @@ class ChestManager(val name: String, private val config: Config) {
     private val restrictOpenCount: Int = config.getInt("限制打开次数", -1)
     private val maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
     private var fixedItems: ArrayList<Item> = ArrayList()
-    var randomItems = ArrayList<RandomItem>()
+    private var randomItems = ArrayList<RandomItem>()
     val chests: MutableMap<Position, Chest> = HashMap()
 
     init {
@@ -37,7 +37,7 @@ class ChestManager(val name: String, private val config: Config) {
                 split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
                 Server.getInstance().getLevelByName(split[3])
             )
-            this.chests[position] = Chest(this, position);
+            this.chests[position] = Chest(this, position)
         }
     }
 
@@ -70,6 +70,13 @@ class ChestManager(val name: String, private val config: Config) {
             }
         }
         return false
+    }
+
+    fun closeAllChest() {
+        this.chests.values.forEach {
+            chest -> chest.close()
+        }
+        this.chests.clear()
     }
 
     fun getFixedItems(): List<Item> {
