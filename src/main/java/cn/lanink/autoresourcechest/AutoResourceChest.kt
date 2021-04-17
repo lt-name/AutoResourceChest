@@ -32,9 +32,13 @@ class AutoResourceChest : PluginBase() {
         instance = this
         this.saveDefaultConfig()
         this.saveResource("playerUseChestLog.yml")
-        val file = File("$dataFolder/Chests")
-        if (!file.exists() && !file.mkdirs()) {
-            logger.error("Chests 文件夹初始化失败")
+        val file1 = File("$dataFolder/Chests")
+        if (!file1.exists() && !file1.mkdirs()) {
+            logger.error("Chests 文件夹初始化失败, 这可能导致插件无法正常运行！")
+        }
+        val file2 = File("$dataFolder/Players")
+        if (!file2.exists() && !file2.mkdirs()) {
+            logger.error("Players 文件夹初始化失败, 这可能导致插件无法正常运行！")
         }
         if (this.config.getBoolean("debug", false)) {
             debug = true
@@ -95,7 +99,7 @@ class AutoResourceChest : PluginBase() {
                             sender.sendMessage("§e>> §c已存在名为 $name 的资源箱配置！")
                             return true
                         }
-                        this.saveResource("Chests/Chest.yml", "Chests/$name.yml", true)
+                        this.saveResource("chest.yml", "Chests/$name.yml", true)
                         this.chestConfigMap[name] = ChestManager(name, Config("$dataFolder/Chests/$name.yml", Config.YAML))
                         sender.sendMessage("§e>> §a新的资源箱配置 $name 创建成功！")
                     }else {
@@ -118,6 +122,14 @@ class AutoResourceChest : PluginBase() {
                     }
                 }
 
+                "reload" -> {
+                    for (chestManager in this.chestConfigMap.values) {
+                        chestManager.closeAllChest()
+                    }
+                    this.chestConfigMap.clear()
+                    this.loadAllChests()
+                }
+
                 else -> {
                     this.sendCommandHelp(sender)
                 }
@@ -129,7 +141,8 @@ class AutoResourceChest : PluginBase() {
 
     private fun sendCommandHelp(sender: CommandSender) {
         sender.sendMessage("§a/arc create <配置名称> §e创建一个资源箱配置\n" +
-                "§a/arc place <配置名称> §e放置一个资源箱")
+                "§a/arc place <配置名称> §e放置一个资源箱\n" +
+                "§a/arc reload §e从配置文件重新加载资源箱配置\n")
     }
 
     private fun loadAllChests() {
