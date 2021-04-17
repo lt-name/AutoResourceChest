@@ -1,6 +1,8 @@
 package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
+import cn.nukkit.Player
+import cn.nukkit.Server
 import cn.nukkit.block.Block
 import cn.nukkit.blockentity.BlockEntityChest
 import cn.nukkit.event.EventHandler
@@ -10,11 +12,14 @@ import cn.nukkit.event.block.BlockBreakEvent
 import cn.nukkit.event.block.BlockPlaceEvent
 import cn.nukkit.event.player.PlayerInteractEvent
 import cn.nukkit.event.player.PlayerQuitEvent
+import cn.nukkit.level.Position
 
 /**
  * @author lt_name
  */
 class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
+
+    private val logCache = HashMap<Player, ArrayList<Position>>()
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
@@ -78,7 +83,15 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 }
             }else {
                 chest.isNeedRefresh = true
-                playerConfig.addOpenCount(block)
+                val list = this.logCache.getOrDefault(player, ArrayList())
+                if (!list.contains(block)) {
+                    list.add(block)
+                    this.logCache[player] = list
+                    Server.getInstance().scheduler.scheduleDelayedTask(this.autoResourceChest, {
+                        playerConfig.addOpenCount(block)
+                        this.logCache[player]?.remove(block)
+                    }, chest.chestManager.refreshInterval/2 * 20)
+                }
             }
         }
     }
