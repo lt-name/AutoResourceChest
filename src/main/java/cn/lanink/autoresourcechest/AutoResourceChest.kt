@@ -2,6 +2,7 @@ package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.chest.ChestManager
+import cn.lanink.autoresourcechest.form.FormListener
 import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
 import cn.nukkit.Player
@@ -59,6 +60,7 @@ class AutoResourceChest : PluginBase() {
 
     override fun onEnable() {
         this.loadAllChests()
+        server.pluginManager.registerEvents(FormListener(this), this)
         server.pluginManager.registerEvents(OnListener(this), this)
         server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
         logger.info("加载完成！版本:$VERSION")
