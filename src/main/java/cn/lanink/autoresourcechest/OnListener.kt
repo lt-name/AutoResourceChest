@@ -1,6 +1,7 @@
 package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
+import cn.lanink.autoresourcechest.form.FormCreate
 import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.block.Block
@@ -69,6 +70,13 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
         if (block.id == Block.CHEST && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             val chest: Chest = this.autoResourceChest.getChestByPos(block) ?: return
             val playerConfig = this.autoResourceChest.playerConfigManager.getPlayerConfig(player)
+            if (player.isSneaking) {
+                if (player.isOp) {
+                    FormCreate.sendChestConfigMenu(player, chest.chestManager)
+                }
+                event.setCancelled()
+                return
+            }
             if (chest.chestManager.restrictOpenCount > 0) {
                 if (playerConfig.getOpenCount(block) >= chest.chestManager.restrictOpenCount) {
                     event.setCancelled()
