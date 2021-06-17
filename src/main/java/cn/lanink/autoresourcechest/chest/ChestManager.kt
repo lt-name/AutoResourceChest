@@ -1,5 +1,6 @@
 package cn.lanink.autoresourcechest.chest
 
+import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.item.RandomItem
 import cn.nukkit.Server
 import cn.nukkit.item.Item
@@ -33,10 +34,15 @@ class ChestManager(val name: String, private val config: Config) {
         }
         for (pos in config.getStringList("pos")) {
             val split = pos.split(":")
+            if (!Server.getInstance().loadLevel(split[3])) {
+                AutoResourceChest.instance?.logger?.warning("世界：$split[3] 加载失败！")
+                continue
+            }
             val position = Position(
                 split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
                 Server.getInstance().getLevelByName(split[3])
             )
+            position.chunk.load()
             this.chests[position] = Chest(this, position)
         }
     }
@@ -87,7 +93,7 @@ class ChestManager(val name: String, private val config: Config) {
         val list = ArrayList<Item>()
         for (randomItem in this.randomItems) {
             val item = randomItem.getItem()
-            if (item != null) {
+            if (item.id != 0) {
                 list.add(item.clone())
                 if (list.size >= this.maxRandomItemCount) {
                     break

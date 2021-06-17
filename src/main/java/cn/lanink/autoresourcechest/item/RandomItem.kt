@@ -23,8 +23,8 @@ class RandomItem(string: String) {
         probability = split2[1].toInt()
     }
 
-    fun getItem(): Item? {
-        return if (RANDOM.nextInt(100) < probability) item.clone() else null
+    fun getItem(): Item {
+        return if (RANDOM.nextInt(100) < probability) item.clone() else Item.get(0);
     }
 
 }
