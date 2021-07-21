@@ -14,10 +14,10 @@ import lombok.EqualsAndHashCode
 @EqualsAndHashCode
 class ChestManager(val name: String, private val config: Config) {
 
-    val showName: String = config.getString("showName")
-    val refreshInterval: Int = config.getInt("刷新间隔(s)")
-    val restrictOpenCount: Int = config.getInt("限制打开次数", -1)
-    private val maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
+    var showName: String = config.getString("showName")
+    var refreshInterval: Int = config.getInt("刷新间隔(s)")
+    var restrictOpenCount: Int = config.getInt("限制打开次数", -1)
+    var maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
     private var fixedItems: ArrayList<Item> = ArrayList()
     private var randomItems = ArrayList<RandomItem>()
     val chests: MutableMap<Position, Chest> = HashMap()
@@ -48,11 +48,17 @@ class ChestManager(val name: String, private val config: Config) {
     }
 
     fun saveConfig() {
+        this.config.set("showName", this.showName)
+        this.config.set("刷新间隔(s)", this.refreshInterval)
+        this.config.set("限制打开次数", this.restrictOpenCount)
+        this.config.set("生成随机物品数量限制", this.maxRandomItemCount)
+
         val list = mutableListOf<String>()
         for (pos in this.chests.keys) {
             list.add("${pos.x}:${pos.y}:${pos.z}:${pos.level.name}")
         }
         this.config.set("pos", list)
+
         this.config.save()
     }
 

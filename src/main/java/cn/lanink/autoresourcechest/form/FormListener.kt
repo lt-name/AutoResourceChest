@@ -1,30 +1,28 @@
 package cn.lanink.autoresourcechest.form
 
 import cn.lanink.autoresourcechest.AutoResourceChest
+import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowCustom
+import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowModal
+import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowSimple
 import cn.nukkit.event.EventHandler
+import cn.nukkit.event.EventPriority
 import cn.nukkit.event.Listener
 import cn.nukkit.event.player.PlayerFormRespondedEvent
-import cn.nukkit.form.response.FormResponseCustom
 
 /**
  * @author lt_name
  */
 class FormListener(val autoResourceChest: AutoResourceChest) : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onPlayerFormResponded(event: PlayerFormRespondedEvent) {
-        val player = event.player ?: return
-        val formType = FormCreate.FORM_CACHE[player]?.get(event.formID) ?: return
-        FormCreate.FORM_CACHE[player]?.remove(event.formID)
-
-        val window = event.window ?: return
-        val response = event.response ?: return
-        if (response is FormResponseCustom) {
-            if (formType == FormCreate.FormType.CHEST_CONFIG_MENU) {
-                //TODO
-
-            }
+        if (AdvancedFormWindowSimple.onEvent(event.window, event.player)) {
+            return
         }
+        if (AdvancedFormWindowModal.onEvent(event.window, event.player)) {
+            return
+        }
+        AdvancedFormWindowCustom.onEvent(event.window, event.player)
     }
 
 }

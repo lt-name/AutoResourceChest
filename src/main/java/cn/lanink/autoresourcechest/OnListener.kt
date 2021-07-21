@@ -70,10 +70,8 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
         if (block.id == Block.CHEST && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             val chest: Chest = this.autoResourceChest.getChestByPos(block) ?: return
             val playerConfig = this.autoResourceChest.playerConfigManager.getPlayerConfig(player)
-            if (player.isSneaking) {
-                if (player.isOp) {
-                    FormCreate.sendChestConfigMenu(player, chest.chestManager)
-                }
+            if (player.isSneaking && player.isOp) {
+                FormCreate.sendChestSetMenu(player, chest.chestManager)
                 event.setCancelled()
                 return
             }
