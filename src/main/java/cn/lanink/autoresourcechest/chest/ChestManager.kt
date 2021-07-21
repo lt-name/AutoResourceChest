@@ -18,7 +18,7 @@ class ChestManager(val name: String, private val config: Config) {
     var refreshInterval: Int = config.getInt("刷新间隔(s)")
     var restrictOpenCount: Int = config.getInt("限制打开次数", -1)
     var maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
-    private var fixedItems: ArrayList<Item> = ArrayList()
+    var fixedItems = ArrayList<Item>()
     private var randomItems = ArrayList<RandomItem>()
     val chests: MutableMap<Position, Chest> = HashMap()
 
@@ -52,6 +52,18 @@ class ChestManager(val name: String, private val config: Config) {
         this.config.set("刷新间隔(s)", this.refreshInterval)
         this.config.set("限制打开次数", this.restrictOpenCount)
         this.config.set("生成随机物品数量限制", this.maxRandomItemCount)
+
+        val fixedItemList = mutableListOf<String>()
+        for (item: Item in this.fixedItems) {
+            fixedItemList.add("${item.id}:${item.damage}&${item.count}")
+        }
+        this.config.set("fixedItem", fixedItemList)
+
+        val randomItemList = mutableListOf<String>()
+        for (randomItem: RandomItem in this.randomItems) {
+            randomItemList.add(randomItem.toString())
+        }
+        this.config.set("randomItem", randomItemList)
 
         val list = mutableListOf<String>()
         for (pos in this.chests.keys) {
@@ -97,8 +109,10 @@ class ChestManager(val name: String, private val config: Config) {
 
     fun getRandomItems(): List<Item> {
         val list = ArrayList<Item>()
-        for (randomItem in this.randomItems) {
-            val item = randomItem.getItem()
+        val randomItems = ArrayList<RandomItem>(this.randomItems)
+        randomItems.shuffle()
+        for (randomItem: RandomItem in randomItems) {
+            val item = randomItem.getRandomItem()
             if (item.id != 0) {
                 list.add(item.clone())
                 if (list.size >= this.maxRandomItemCount) {
