@@ -1,81 +1,61 @@
-package cn.lanink.autoresourcechest.form.windows;
+package cn.lanink.autoresourcechest.form.windows
 
-import cn.lanink.autoresourcechest.AutoResourceChest;
-import cn.nukkit.Player;
-import cn.nukkit.form.element.Element;
-import cn.nukkit.form.element.ElementButtonImageData;
-import cn.nukkit.form.response.FormResponseCustom;
-import cn.nukkit.form.window.FormWindow;
-import cn.nukkit.form.window.FormWindowCustom;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import cn.lanink.autoresourcechest.AutoResourceChest.Companion.GSON
+import cn.nukkit.Player
+import cn.nukkit.form.element.Element
+import cn.nukkit.form.element.ElementButtonImageData
+import cn.nukkit.form.response.FormResponseCustom
+import cn.nukkit.form.window.FormWindow
+import cn.nukkit.form.window.FormWindowCustom
+import java.util.function.BiConsumer
+import java.util.function.Consumer
 
 /**
  * @author lt_name
  */
-public class AdvancedFormWindowCustom extends FormWindowCustom {
+class AdvancedFormWindowCustom : FormWindowCustom {
 
-    protected BiConsumer<FormResponseCustom, Player> buttonClickedListener;
-    protected Consumer<Player> formClosedListener;
+    private var buttonClickedListener: BiConsumer<FormResponseCustom, Player>? = null
+    private var formClosedListener: Consumer<Player>? = null
 
-    public AdvancedFormWindowCustom(String title) {
-        super(title);
+    constructor(title: String) : super(title)
+    constructor(title: String, contents: List<Element>) : super(title, contents)
+    constructor(title: String, contents: List<Element>, icon: String) : super(title, contents, icon)
+    constructor(title: String, contents: List<Element>, icon: ElementButtonImageData) : super(title, contents, icon)
+
+    fun onResponded(listener: BiConsumer<FormResponseCustom, Player>): AdvancedFormWindowCustom {
+        this.buttonClickedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowCustom(String title, List<Element> contents) {
-        super(title, contents);
+    fun onClosed(listener: Consumer<Player>): AdvancedFormWindowCustom {
+        this.formClosedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowCustom(String title, List<Element> contents, String icon) {
-        super(title, contents, icon);
+    private fun callResponded(formResponseCustom: FormResponseCustom, player: Player) {
+        this.buttonClickedListener?.accept(formResponseCustom, player)
     }
 
-    public AdvancedFormWindowCustom(String title, List<Element> contents, ElementButtonImageData icon) {
-        super(title, contents, icon);
+    private fun callClosed(player: Player) {
+        this.formClosedListener?.accept(player)
     }
 
-    public AdvancedFormWindowCustom onResponded(@NotNull BiConsumer<FormResponseCustom, Player> listener) {
-        this.buttonClickedListener = listener;
-        return this;
+    override fun getJSONData(): String {
+        return GSON.toJson(this, FormWindowCustom::class.java)
     }
 
-    public AdvancedFormWindowCustom onClosed(@NotNull Consumer<Player> listener) {
-        this.formClosedListener = Objects.requireNonNull(listener);
-        return this;
-    }
-
-    protected void callResponded(@NotNull FormResponseCustom formResponseCustom, @NotNull Player player) {
-        if (this.buttonClickedListener != null) {
-            this.buttonClickedListener.accept(formResponseCustom, player);
-        }
-    }
-
-    protected void callClosed(@NotNull Player player) {
-        if (this.formClosedListener != null) {
-            this.formClosedListener.accept(player);
-        }
-    }
-
-    public static boolean onEvent(@NotNull FormWindow formWindow, @NotNull Player player) {
-        if (formWindow instanceof AdvancedFormWindowCustom) {
-            AdvancedFormWindowCustom advancedFormWindowCustom = (AdvancedFormWindowCustom) formWindow;
-            if (advancedFormWindowCustom.wasClosed() || advancedFormWindowCustom.getResponse() == null) {
-                advancedFormWindowCustom.callClosed(player);
-            }else {
-                advancedFormWindowCustom.callResponded(advancedFormWindowCustom.getResponse(), player);
+    companion object {
+        fun onEvent(formWindow: FormWindow, player: Player): Boolean {
+            if (formWindow is AdvancedFormWindowCustom) {
+                if (formWindow.wasClosed() || formWindow.response == null) {
+                    formWindow.callClosed(player)
+                } else {
+                    formWindow.callResponded(formWindow.response, player)
+                }
+                return true
             }
-            return true;
+            return false
         }
-        return false;
     }
-
-    @Override
-    public String getJSONData() {
-            return AutoResourceChest.getGSON().toJson(this, FormWindowCustom.class);
-    }
-
 }

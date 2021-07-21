@@ -63,7 +63,7 @@ class AutoResourceChest : PluginBase() {
 
     override fun onEnable() {
         this.loadAllChests()
-        server.pluginManager.registerEvents(FormListener(this), this)
+        server.pluginManager.registerEvents(FormListener(), this)
         server.pluginManager.registerEvents(OnListener(this), this)
         server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
         logger.info("加载完成！版本:$VERSION")

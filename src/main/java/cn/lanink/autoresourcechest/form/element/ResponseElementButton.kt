@@ -1,39 +1,30 @@
-package cn.lanink.autoresourcechest.form.element;
+package cn.lanink.autoresourcechest.form.element
 
-import cn.nukkit.Player;
-import cn.nukkit.form.element.ElementButton;
-import cn.nukkit.form.element.ElementButtonImageData;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
-import java.util.function.Consumer;
+import cn.nukkit.Player
+import cn.nukkit.form.element.ElementButton
+import cn.nukkit.form.element.ElementButtonImageData
+import java.util.function.Consumer
 
 /**
  * @author lt_name
  */
-public class ResponseElementButton extends ElementButton {
+class ResponseElementButton : ElementButton {
 
-    private Consumer<Player> clickedListener;
+    private var clickedListener: Consumer<Player>? = null
 
-    public ResponseElementButton(String text) {
-        super(text);
+    constructor(text: String?) : super(text)
+    constructor(text: String?, image: ElementButtonImageData?) : super(text, image)
+
+    fun onClicked(clickedListener: Consumer<Player>): ResponseElementButton {
+        this.clickedListener = clickedListener
+        return this
     }
 
-    public ResponseElementButton(String text, ElementButtonImageData image) {
-        super(text, image);
-    }
-
-    public ResponseElementButton onClicked(@NotNull Consumer<Player> clickedListener) {
-        this.clickedListener = Objects.requireNonNull(clickedListener);
-        return this;
-    }
-
-    public boolean callClicked(@NotNull Player player) {
-        if (this.clickedListener != null) {
-            this.clickedListener.accept(player);
-            return true;
+    fun callClicked(player: Player): Boolean {
+        if (clickedListener != null) {
+            clickedListener!!.accept(player)
+            return true
         }
-        return false;
+        return false
     }
-
 }

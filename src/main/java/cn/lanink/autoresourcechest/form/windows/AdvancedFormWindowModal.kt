@@ -1,77 +1,66 @@
-package cn.lanink.autoresourcechest.form.windows;
+package cn.lanink.autoresourcechest.form.windows
 
-import cn.lanink.autoresourcechest.AutoResourceChest;
-import cn.nukkit.Player;
-import cn.nukkit.form.window.FormWindow;
-import cn.nukkit.form.window.FormWindowModal;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
-import java.util.function.Consumer;
+import cn.lanink.autoresourcechest.AutoResourceChest.Companion.GSON
+import cn.nukkit.Player
+import cn.nukkit.form.window.FormWindow
+import cn.nukkit.form.window.FormWindowModal
+import java.util.function.Consumer
 
 /**
  * @author lt_name
  */
-public class AdvancedFormWindowModal extends FormWindowModal {
+class AdvancedFormWindowModal(title: String, content: String, trueButtonText: String, falseButtonText: String) : FormWindowModal(title, content, trueButtonText, falseButtonText) {
 
-    protected Consumer<Player> buttonTrueClickedListener, buttonFalseClickedListener, formClosedListener;
+    private var buttonTrueClickedListener: Consumer<Player>? = null
+    private var buttonFalseClickedListener: Consumer<Player>? = null
+    private var formClosedListener: Consumer<Player>? = null
 
-    public AdvancedFormWindowModal(String title, String content, String trueButtonText, String falseButtonText) {
-        super(title, content, trueButtonText, falseButtonText);
+    fun onClickedTrue(listener: Consumer<Player>): AdvancedFormWindowModal {
+        this.buttonTrueClickedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowModal onClickedTrue(@NotNull Consumer<Player> listener) {
-        this.buttonTrueClickedListener = Objects.requireNonNull(listener);
-        return this;
+    fun onClickedFalse(listener: Consumer<Player>): AdvancedFormWindowModal {
+        this.buttonFalseClickedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowModal onClickedFalse(@NotNull Consumer<Player> listener) {
-        this.buttonFalseClickedListener = Objects.requireNonNull(listener);
-        return this;
+    fun onClosed(listener: Consumer<Player>): AdvancedFormWindowModal {
+        this.formClosedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowModal onClosed(@NotNull Consumer<Player> listener) {
-        this.formClosedListener = Objects.requireNonNull(listener);
-        return this;
+    private fun callClickedTrue(player: Player) {
+        this.buttonTrueClickedListener?.accept(player)
     }
 
-    public void callClickedTrue(@NotNull Player player) {
-        if (this.buttonTrueClickedListener != null) {
-            this.buttonTrueClickedListener.accept(player);
-        }
+    private fun callClickedFalse(player: Player) {
+        this.buttonFalseClickedListener?.accept(player)
     }
 
-    public void callClickedFalse(@NotNull Player player) {
-        if (this.buttonFalseClickedListener != null) {
-            this.buttonFalseClickedListener.accept(player);
-        }
+    private fun callClosed(player: Player) {
+        this.formClosedListener?.accept(player)
     }
 
-    public void callClosed(@NotNull Player player) {
-        if (this.formClosedListener != null) {
-            this.formClosedListener.accept(player);
-        }
+    override fun getJSONData(): String {
+        return GSON.toJson(this, FormWindowModal::class.java)
     }
 
-    public static boolean onEvent(@NotNull FormWindow formWindow, @NotNull Player player) {
-        if (formWindow instanceof AdvancedFormWindowModal) {
-            AdvancedFormWindowModal advancedFormWindowModal = (AdvancedFormWindowModal) formWindow;
-            if (advancedFormWindowModal.wasClosed() || advancedFormWindowModal.getResponse() == null) {
-                advancedFormWindowModal.callClosed(player);
-            }else {
-                if (advancedFormWindowModal.getResponse().getClickedButtonId() == 0) {
-                    advancedFormWindowModal.callClickedTrue(player);
-                }else {
-                    advancedFormWindowModal.callClickedFalse(player);
+    companion object {
+        fun onEvent(formWindow: FormWindow, player: Player): Boolean {
+            if (formWindow is AdvancedFormWindowModal) {
+                if (formWindow.wasClosed() || formWindow.response == null) {
+                    formWindow.callClosed(player)
+                } else {
+                    if (formWindow.response.clickedButtonId == 0) {
+                        formWindow.callClickedTrue(player)
+                    } else {
+                        formWindow.callClickedFalse(player)
+                    }
                 }
+                return true
             }
-            return true;
+            return false
         }
-        return false;
     }
-
-    public String getJSONData() {
-        return AutoResourceChest.getGSON().toJson(this, FormWindowModal.class);
-    }
-
 }

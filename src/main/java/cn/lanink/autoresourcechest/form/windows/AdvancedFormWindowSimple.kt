@@ -1,85 +1,67 @@
-package cn.lanink.autoresourcechest.form.windows;
+package cn.lanink.autoresourcechest.form.windows
 
-import cn.lanink.autoresourcechest.AutoResourceChest;
-import cn.lanink.autoresourcechest.form.element.ResponseElementButton;
-import cn.nukkit.Player;
-import cn.nukkit.form.element.ElementButton;
-import cn.nukkit.form.window.FormWindow;
-import cn.nukkit.form.window.FormWindowSimple;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import cn.lanink.autoresourcechest.AutoResourceChest.Companion.GSON
+import cn.lanink.autoresourcechest.form.element.ResponseElementButton
+import cn.nukkit.Player
+import cn.nukkit.form.element.ElementButton
+import cn.nukkit.form.window.FormWindow
+import cn.nukkit.form.window.FormWindowSimple
+import java.util.function.BiConsumer
+import java.util.function.Consumer
 
 /**
  * @author lt_name
  */
-public class AdvancedFormWindowSimple extends FormWindowSimple {
+class AdvancedFormWindowSimple : FormWindowSimple {
 
-    protected BiConsumer<ElementButton, Player> buttonClickedListener;
-    protected Consumer<Player> formClosedListener;
+    private var buttonClickedListener: BiConsumer<ElementButton, Player>? = null
+    private var formClosedListener: Consumer<Player>? = null
 
-    public AdvancedFormWindowSimple(String title) {
-        this(title, "");
+    constructor(title: String, content: String = "") : super(title, content)
+    constructor(title: String, content: String, buttons: List<ElementButton>) : super(title, content, buttons)
+
+    fun addButton(text: String, listener: Consumer<Player>) {
+        this.addButton(ResponseElementButton(text).onClicked(listener))
     }
 
-    public AdvancedFormWindowSimple(String title, String content) {
-        super(title, content);
+    fun onClicked(listener: BiConsumer<ElementButton, Player>): AdvancedFormWindowSimple {
+        this.buttonClickedListener = listener
+        return this
     }
 
-    public AdvancedFormWindowSimple(String title, String content, List<ElementButton> buttons) {
-        super(title, content, buttons);
+    fun onClosed(listener: Consumer<Player>): AdvancedFormWindowSimple {
+        this.formClosedListener = listener
+        return this
     }
 
-    public void addButton(String text, Consumer<Player> listener) {
-        this.addButton(new ResponseElementButton(text).onClicked(listener));
+    private fun callClicked(elementButton: ElementButton, player: Player) {
+        this.buttonClickedListener?.accept(elementButton, player)
     }
 
-    public AdvancedFormWindowSimple onClicked(@NotNull BiConsumer<ElementButton, Player> listener) {
-        this.buttonClickedListener = Objects.requireNonNull(listener);
-        return this;
+    private fun callClosed(player: Player) {
+        this.formClosedListener?.accept(player)
     }
 
-    public AdvancedFormWindowSimple onClosed(@NotNull Consumer<Player> listener) {
-        this.formClosedListener = Objects.requireNonNull(listener);
-        return this;
+    override fun getJSONData(): String {
+        return GSON.toJson(this, FormWindowSimple::class.java)
     }
 
-    public void callClicked(@NotNull ElementButton elementButton, @NotNull Player player) {
-        if (this.buttonClickedListener != null) {
-            this.buttonClickedListener.accept(elementButton, player);
-        }
-    }
-
-    public void callClosed(@NotNull Player player) {
-        if (this.formClosedListener != null) {
-            this.formClosedListener.accept(player);
-        }
-    }
-
-    public static boolean onEvent(@NotNull FormWindow formWindow, @NotNull Player player) {
-        if (formWindow instanceof AdvancedFormWindowSimple) {
-            AdvancedFormWindowSimple advancedFormWindowSimple = (AdvancedFormWindowSimple) formWindow;
-            if (advancedFormWindowSimple.wasClosed() || advancedFormWindowSimple.getResponse() == null) {
-                advancedFormWindowSimple.callClosed(player);
-            }else {
-                ElementButton elementButton = advancedFormWindowSimple.getResponse().getClickedButton();
-                if (elementButton instanceof ResponseElementButton && ((ResponseElementButton) elementButton).callClicked(player)) {
-                    return true;
-                }else {
-                    advancedFormWindowSimple.callClicked(elementButton, player);
+    companion object {
+        fun onEvent(formWindow: FormWindow, player: Player): Boolean {
+            if (formWindow is AdvancedFormWindowSimple) {
+                if (formWindow.wasClosed() || formWindow.response == null) {
+                    formWindow.callClosed(player)
+                } else {
+                    val elementButton = formWindow.response.clickedButton
+                    if (elementButton is ResponseElementButton && elementButton.callClicked(player)) {
+                        return true
+                    } else {
+                        formWindow.callClicked(elementButton, player)
+                    }
                 }
+                return true
             }
-            return true;
+            return false
         }
-        return false;
     }
-
-    @Override
-    public String getJSONData() {
-        return AutoResourceChest.getGSON().toJson(this, FormWindowSimple.class);
-    }
-
 }
