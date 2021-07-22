@@ -41,11 +41,11 @@ class AutoResourceChest : PluginBase() {
         this.saveResource("playerUseChestLog.yml")
         val file1 = File("$dataFolder/Chests")
         if (!file1.exists() && !file1.mkdirs()) {
-            logger.error("Chests 文件夹初始化失败, 这可能导致插件无法正常运行！")
+            this.logger.error("Chests 文件夹初始化失败, 这可能导致插件无法正常运行！")
         }
         val file2 = File("$dataFolder/Players")
         if (!file2.exists() && !file2.mkdirs()) {
-            logger.error("Players 文件夹初始化失败, 这可能导致插件无法正常运行！")
+            this.logger.error("Players 文件夹初始化失败, 这可能导致插件无法正常运行！")
         }
         if (this.config.getBoolean("debug", false)) {
             debug = true
@@ -63,12 +63,12 @@ class AutoResourceChest : PluginBase() {
 
     override fun onEnable() {
         this.loadAllChests()
-        server.pluginManager.registerEvents(FormListener(), this)
-        server.pluginManager.registerEvents(OnListener(this), this)
-        server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
-        logger.info("加载完成！版本:$VERSION")
-        server.scheduler.scheduleTask(this) {
-            logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
+        this.server.pluginManager.registerEvents(FormListener(), this)
+        this.server.pluginManager.registerEvents(OnListener(this), this)
+        this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
+        this.logger.info("加载完成！版本:$VERSION")
+        this.server.scheduler.scheduleTask(this) {
+            this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
         }
 
     }
@@ -167,7 +167,7 @@ class AutoResourceChest : PluginBase() {
                 count++
             }
         }
-        logger.info("§a已加载 §e$count §a个资源箱配置")
+        this.logger.info("§a已加载 §e$count §a个资源箱配置")
     }
 
     fun getChestByPos(position: Position): Chest? {

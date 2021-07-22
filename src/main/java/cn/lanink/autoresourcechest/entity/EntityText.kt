@@ -16,7 +16,7 @@ class EntityText : Entity {
 
     @Deprecated("只是为了兼容PN核心")
     constructor(chunk: FullChunk?, nbt: CompoundTag?) : super(chunk, nbt) {
-        close()
+        this.close()
     }
 
     constructor(position: Position) : super(position.chunk, getDefaultNBT(position))
