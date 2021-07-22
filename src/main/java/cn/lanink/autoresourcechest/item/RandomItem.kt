@@ -10,17 +10,22 @@ import lombok.EqualsAndHashCode
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-class RandomItem(string: String) {
+class RandomItem {
 
-    var item: Item
-    var probability = 50
+    val item: Item
+    val probability: Int
 
-    init {
+    constructor(string: String) {
         val split = string.split("&")
         val split2 = split[1].split("@")
         this.item = Item.fromString(split[0])
         this.item.setCount(split2[0].toInt())
         this.probability = split2[1].toInt()
+    }
+
+    constructor(item: Item, probability: Int) {
+        this.item = item
+        this.probability = probability
     }
 
     fun getRandomItem(): Item {

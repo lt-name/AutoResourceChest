@@ -17,9 +17,9 @@ class ChestManager(val name: String, private val config: Config) {
     var showName: String = config.getString("showName")
     var refreshInterval: Int = config.getInt("刷新间隔(s)")
     var restrictOpenCount: Int = config.getInt("限制打开次数", -1)
-    var maxRandomItemCount: Int = config.getInt("生成随机物品数量限制")
+    var maxRandomItemCount: Int = config.getInt("随机物品种类数量限制")
     var fixedItems = ArrayList<Item>()
-    private var randomItems = ArrayList<RandomItem>()
+    var randomItems = ArrayList<RandomItem>()
     val chests: MutableMap<Position, Chest> = HashMap()
 
     init {
@@ -51,7 +51,7 @@ class ChestManager(val name: String, private val config: Config) {
         this.config.set("showName", this.showName)
         this.config.set("刷新间隔(s)", this.refreshInterval)
         this.config.set("限制打开次数", this.restrictOpenCount)
-        this.config.set("生成随机物品数量限制", this.maxRandomItemCount)
+        this.config.set("随机物品种类数量限制", this.maxRandomItemCount)
 
         val fixedItemList = mutableListOf<String>()
         for (item: Item in this.fixedItems) {

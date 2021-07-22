@@ -5,6 +5,7 @@ import cn.lanink.autoresourcechest.form.element.ResponseElementButton
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowCustom
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowModal
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowSimple
+import cn.lanink.autoresourcechest.item.RandomItem
 import cn.nukkit.Player
 import cn.nukkit.form.element.ElementInput
 import cn.nukkit.item.Item
@@ -20,8 +21,7 @@ class FormCreate {
             val simple = AdvancedFormWindowSimple("设置资源箱")
             simple.addButton(ResponseElementButton("设置基础配置").onClicked{p -> sendChestSetConfig(p, chestManager)})
             simple.addButton(ResponseElementButton("设置固定刷新物品").onClicked{p -> sendChestSetFixedItem(p, chestManager)})
-            //TODO
-
+            simple.addButton(ResponseElementButton("设置随机刷新物品").onClicked{p -> sendChestSetRandomItem(p, chestManager)})
             player.showFormWindow(simple)
         }
 
@@ -108,6 +108,65 @@ class FormCreate {
                 cp.showFormWindow(modal)
             }
             custom.onClosed{cp -> sendChestSetFixedItem(cp, chestManager)}
+            player.showFormWindow(custom)
+        }
+
+        fun sendChestSetRandomItem(player: Player, chestManager: ChestManager) {
+            val simple = AdvancedFormWindowSimple("设置资源箱随机刷新物品")
+            simple.addButton(ResponseElementButton("添加新物品").onClicked{p -> sendChestSetAddRandomItem(p, chestManager) })
+            for (randomItem: RandomItem in chestManager.randomItems) {
+                val text = "物品ID： ${randomItem.item.id}:${randomItem.item.damage} 数量： ${randomItem.item.count} 概率： ${randomItem.probability}%"
+                simple.addButton(ResponseElementButton(text)
+                    .onClicked{ cp ->
+                        val modal = AdvancedFormWindowModal(
+                            "删除随机刷新物品",
+                            "确定要删除随机刷新物品 $text 吗？",
+                            "确定",
+                            "取消"
+                        )
+                        modal.onClickedTrue{cp2 ->
+                            chestManager.randomItems.remove(randomItem)
+                            chestManager.saveConfig()
+                            val m = AdvancedFormWindowModal(
+                                "删除成功",
+                                "已成功删除随机刷新物品 $text !",
+                                "确定",
+                                "关闭"
+                            )
+                            m.onClickedTrue{cp3 -> sendChestSetRandomItem(cp3, chestManager)}
+                            cp2.showFormWindow(m)
+                        }
+                        modal.onClickedFalse{cp2 -> sendChestSetRandomItem(cp2, chestManager)}
+                        cp.showFormWindow(modal)
+                    })
+            }
+            player.showFormWindow(simple)
+        }
+
+        fun sendChestSetAddRandomItem(player: Player, chestManager: ChestManager) {
+            val custom = AdvancedFormWindowCustom("添加资源箱随机刷新物品")
+            custom.addElement(ElementInput("物品ID", "id", "1"))
+            custom.addElement(ElementInput("物品特殊值", "特殊值", "0"))
+            custom.addElement(ElementInput("数量", "1", "1"))
+            custom.addElement(ElementInput("概率", "0-100", "50"))
+            custom.onResponded{res, cp ->
+                val id = res.getInputResponse(0).toInt()
+                val damage = res.getInputResponse(1).toInt()
+                val count = res.getInputResponse(2).toInt()
+                val probability = res.getInputResponse(3).toInt()
+                val item = Item.get(id, damage, count)
+                val modal = AdvancedFormWindowModal(
+                    "添加资源箱随机刷新物品成功",
+                    "已成功添加物品：\n物品ID： ${item.id}:${item.damage} 数量： ${item.count} 概率： $probability",
+                    "确定",
+                    "关闭"
+                )
+                chestManager.randomItems.add(RandomItem(item, probability))
+                chestManager.saveConfig()
+                modal.onClickedTrue{cp2 -> sendChestSetRandomItem(cp2, chestManager) }
+                cp.showFormWindow(modal)
+            }
+            custom.onClosed{cp -> sendChestSetRandomItem(cp, chestManager)}
             player.showFormWindow(custom)
         }
 
