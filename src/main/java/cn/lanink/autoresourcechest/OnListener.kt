@@ -83,7 +83,9 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 }
             }
             if (chest.isNeedRefresh) {
-                if (chest.time <= chest.chestManager.refreshInterval/2) {
+                val entity = block.level.getBlockEntity(block)
+                if (chest.time <= chest.chestManager.refreshInterval/2 ||
+                    (entity is BlockEntityChest && entity.inventory.isEmpty)) {
                     event.setCancelled()
                     player.sendMessage("§e>> §c请等待箱子刷新！")
                 }
