@@ -5,6 +5,7 @@ import cn.lanink.autoresourcechest.chest.ChestManager
 import cn.lanink.autoresourcechest.form.FormListener
 import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
+import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.Player
 import cn.nukkit.command.Command
 import cn.nukkit.command.CommandSender
@@ -25,6 +26,8 @@ class AutoResourceChest : PluginBase() {
 
     val playerConfigManager = PlayerConfigManager(this)
 
+    private var nbtConfig: Config? = null
+
     companion object {
         @JvmStatic
         val RANDOM = Random()
@@ -37,8 +40,10 @@ class AutoResourceChest : PluginBase() {
 
     override fun onLoad() {
         instance = this
+
         this.saveDefaultConfig()
         this.saveResource("playerUseChestLog.yml")
+
         val file1 = File("$dataFolder/Chests")
         if (!file1.exists() && !file1.mkdirs()) {
             this.logger.error("Chests 文件夹初始化失败, 这可能导致插件无法正常运行！")
@@ -47,6 +52,7 @@ class AutoResourceChest : PluginBase() {
         if (!file2.exists() && !file2.mkdirs()) {
             this.logger.error("Players 文件夹初始化失败, 这可能导致插件无法正常运行！")
         }
+
         if (this.config.getBoolean("debug", false)) {
             debug = true
             this.logger.warning("§c=========================================")
@@ -82,37 +88,36 @@ class AutoResourceChest : PluginBase() {
     }
 
     override fun onCommand(
-        sender: CommandSender?,
+        player: CommandSender?,
         command: Command?,
         label: String?,
         args: Array<out String>?
     ): Boolean {
-        sender ?: return false
+        player ?: return false
         command ?: return false
         if (command.name == "autoresourcechest" || command.name == "arc") {
-            if (!sender.isPlayer) {
-                sender.sendMessage("§e>> §c请在游戏内使用此命令")
+            if (player !is Player) {
+                player.sendMessage("§e>> §c请在游戏内使用此命令")
                 return true
             }
             if (args.isNullOrEmpty()) {
-                this.sendCommandHelp(sender)
+                this.sendCommandHelp(player)
                 return true
             }
-            val player: Player = sender as Player
 
-            when(args[0]) {
+            when(args[0].toLowerCase()) {
                 "create" -> {
                     if (args.size > 1) {
                         val name = args[1]
                         if (File("$dataFolder/Chests/$name.yml").exists()) {
-                            sender.sendMessage("§e>> §c已存在名为 $name 的资源箱配置！")
+                            player.sendMessage("§e>> §c已存在名为 $name 的资源箱配置！")
                             return true
                         }
                         this.saveResource("chest.yml", "Chests/$name.yml", true)
                         this.chestConfigMap[name] = ChestManager(name, Config("$dataFolder/Chests/$name.yml", Config.YAML))
-                        sender.sendMessage("§e>> §a新的资源箱配置 $name 创建成功！")
+                        player.sendMessage("§e>> §a新的资源箱配置 $name 创建成功！")
                     }else {
-                        sender.sendMessage("§e>> §c请输入资源箱名字！")
+                        player.sendMessage("§e>> §c请输入资源箱名字！")
                     }
                 }
 
@@ -121,13 +126,33 @@ class AutoResourceChest : PluginBase() {
                         val name = args[1]
                         val chestManager = this.chestConfigMap[name]
                         if (chestManager == null) {
-                            sender.sendMessage("§e>> §c不存在名为 $name 的资源箱配置，请先创建！")
+                            player.sendMessage("§e>> §c不存在名为 $name 的资源箱配置，请先创建！")
                             return true
                         }
                         this.placeChestPlayer[player] = chestManager
-                        sender.sendMessage("§e>> §a请放置一个箱子作为资源箱！")
+                        player.sendMessage("§e>> §a请放置一个箱子作为资源箱！")
                     }else {
-                        sender.sendMessage("§e>> §c请输入资源箱名字！")
+                        player.sendMessage("§e>> §c请输入资源箱名字！")
+                    }
+                }
+
+                "saveItem".toLowerCase() -> {
+                    if (args.size > 1) {
+                        val name = args[1]
+                        val item = player.inventory.itemInHand
+                        if (item.id == 0 || !item.hasCompoundTag()) {
+                            player.sendMessage("普通物品无需保存！可直接使用物品ID：${item.id}:${item.damage}")
+                            return true
+                        }
+                        if (this.getNbtConfig().keys.contains(name)) {
+                            player.sendMessage("NBT物品：$name 已存在！换个名字吧！")
+                        }else {
+                            this.getNbtConfig().set(name, "${item.id}:${item.damage}:${Utils.bytesToBase64(item.compoundTag)}")
+                            this.getNbtConfig().save()
+                            player.sendMessage("NBT物品：$name 保存成功！")
+                        }
+                    }else{
+                        player.sendMessage("请输入名称")
                     }
                 }
 
@@ -140,7 +165,7 @@ class AutoResourceChest : PluginBase() {
                 }
 
                 else -> {
-                    this.sendCommandHelp(sender)
+                    this.sendCommandHelp(player)
                 }
             }
             return true
@@ -151,6 +176,7 @@ class AutoResourceChest : PluginBase() {
     private fun sendCommandHelp(sender: CommandSender) {
         sender.sendMessage("§a/arc create <配置名称> §e创建一个资源箱配置\n" +
                 "§a/arc place <配置名称> §e放置一个资源箱\n" +
+                "§a/arc saveItem <物品名称> §e保存手上的物品\n" +
                 "§a/arc reload §e从配置文件重新加载资源箱配置\n")
     }
 
@@ -168,6 +194,13 @@ class AutoResourceChest : PluginBase() {
             }
         }
         this.logger.info("§a已加载 §e$count §a个资源箱配置")
+    }
+
+    fun getNbtConfig(): Config {
+        if (this.nbtConfig == null) {
+            this.nbtConfig = Config("$dataFolder/nbtItem.yml")
+        }
+        return this.nbtConfig!!
     }
 
     fun getChestByPos(position: Position): Chest? {
