@@ -41,9 +41,9 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
         //仅调整浮空字的位置
         this.text.setPosition(position.add(0.5, 1.0, 0.5))
         if (this.isNeedRefresh) {
-            this.text.nameTag = chestManager.showName.replace("%time%", formatTime(time))
+            this.text.nameTag = this.chestManager.showName.replace("%time%", formatTime(time))
         }else {
-            this.text.nameTag = chestManager.showName.replace("%time%", "已刷新")
+            this.text.nameTag = this.chestManager.showName.replace("%time%", "已刷新")
         }
         for (player in this.text.getLevel().players.values) {
             if (player.getLevel() !== this.text.getLevel() || player.distance(this.position) > 5) {
@@ -55,24 +55,24 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
     }
 
     private fun refreshInventory() {
-        var blockEntity = position.getLevel().getBlockEntity(position)
+        var blockEntity = this.position.getLevel().getBlockEntity(this.position)
         if (blockEntity !is BlockEntityChest) {
-            position.getLevel().setBlock(position, Block.get(Block.CHEST))
-            blockEntity = position.getLevel().getBlockEntity(position)
+            this.position.getLevel().setBlock(this.position, Block.get(Block.CHEST))
+            blockEntity = this.position.getLevel().getBlockEntity(this.position)
             if (blockEntity !is BlockEntityChest) {
                 return
             }
         }
         val inventory = blockEntity.inventory
         inventory.clearAll()
-        inventory.addItem(*chestManager.getFixedItems().toTypedArray())
-        inventory.addItem(*chestManager.getRandomItems().toTypedArray())
+        inventory.addItem(*this.chestManager.getFixedItems().toTypedArray())
+        inventory.addItem(*this.chestManager.getRandomItems().toTypedArray())
     }
 
     fun close() {
         this.closed = true
         this.text.close()
-        val blockEntity = position.getLevel().getBlockEntity(position)
+        val blockEntity = this.position.getLevel().getBlockEntity(this.position)
         if (blockEntity != null && blockEntity is BlockEntityChest) {
             blockEntity.inventory.clearAll()
         }
