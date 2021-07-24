@@ -5,6 +5,7 @@ import cn.lanink.autoresourcechest.form.element.ResponseElementButton
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowCustom
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowModal
 import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowSimple
+import cn.lanink.autoresourcechest.item.FixedItem
 import cn.lanink.autoresourcechest.item.RandomItem
 import cn.nukkit.Player
 import cn.nukkit.form.element.ElementInput
@@ -45,8 +46,8 @@ class FormCreate {
         fun sendChestSetFixedItem(player: Player, chestManager: ChestManager) {
             val simple = AdvancedFormWindowSimple("设置资源箱固定刷新物品")
             simple.addButton(ResponseElementButton("添加新物品").onClicked{p -> sendChestSetAddFixedItem(p, chestManager)})
-            for (item: Item in chestManager.getFixedItems()) {
-                val text = "物品ID： ${item.id}:${item.damage} 数量： ${item.count}"
+            for (fixedItem: FixedItem in chestManager.fixedItems) {
+                val text = "物品ID： ${fixedItem.item.id}:${fixedItem.item.damage} 数量： ${fixedItem.item.count}"
                 simple.addButton(ResponseElementButton(text)
                     .onClicked{ cp ->
                         val modal = AdvancedFormWindowModal(
@@ -56,7 +57,7 @@ class FormCreate {
                             "取消"
                         )
                         modal.onClickedTrue{cp2 ->
-                            chestManager.fixedItems.remove(item)
+                            chestManager.fixedItems.remove(fixedItem)
                             chestManager.saveConfig()
                             val m = AdvancedFormWindowModal(
                                 "删除成功",
@@ -85,10 +86,10 @@ class FormCreate {
                 val count = res.getInputResponse(2).toInt()
                 val item = Item.get(id, damage, count)
                 var isNewItem = true
-                for (i : Item in chestManager.fixedItems) {
-                    if (id == i.id && damage == i.damage) {
+                for (i : FixedItem in chestManager.fixedItems) {
+                    if (id == i.item.id && damage == i.item.damage) {
                         isNewItem = false
-                        i.setCount(count)
+                        i.item.setCount(count)
                         break
                     }
                 }
@@ -99,7 +100,7 @@ class FormCreate {
                     "关闭"
                 )
                 if (isNewItem) {
-                    chestManager.fixedItems.add(item)
+                    chestManager.fixedItems.add(FixedItem(item))
                     modal.title = "添加资源箱固定刷新物品成功"
                     modal.content = "已成功添加物品：\n物品ID： ${item.id}:${item.damage} 数量： ${item.count}"
                 }

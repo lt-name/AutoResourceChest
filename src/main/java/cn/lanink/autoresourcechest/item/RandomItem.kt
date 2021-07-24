@@ -1,6 +1,8 @@
 package cn.lanink.autoresourcechest.item
 
+import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.AutoResourceChest.Companion.RANDOM
+import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.item.Item
 import lombok.AllArgsConstructor
 import lombok.EqualsAndHashCode
@@ -10,17 +12,30 @@ import lombok.EqualsAndHashCode
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-class RandomItem {
+class RandomItem: BaseItem {
 
-    val item: Item
     val probability: Int
 
     constructor(string: String) {
         val split = string.split("&")
+        val split1 = split[0].split(":")
         val split2 = split[1].split("@")
-        this.item = Item.fromString(split[0])
-        this.item.setCount(split2[0].toInt())
         this.probability = split2[1].toInt()
+        if (split1[1] == "nbt") {
+            this.nbtItemName = split1[0]
+            val nbtItemString = AutoResourceChest.instance?.getNbtConfig()?.getString(this.nbtItemName)
+            if (nbtItemString == null || nbtItemString == "") {
+                AutoResourceChest.instance?.logger?.error("NBT物品：${this.nbtItemName} 配置不存在，无法加载！")
+                this.item = Item.get(0)
+                return
+            }
+            val split3 = nbtItemString.split(":")
+            this.item = Item.fromString("${split3[0]}:${split3[1]}")
+            this.item.compoundTag = Utils.base64ToBytes(split3[2])
+        } else {
+            this.item = Item.fromString(split[0])
+        }
+        this.item.setCount(split2[0].toInt())
     }
 
     constructor(item: Item, probability: Int) {
@@ -33,7 +48,11 @@ class RandomItem {
     }
 
     override fun toString(): String {
-        return "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
+        if (this.isNbtItem()) {
+            return "${this.nbtItemName}:nbt&${this.item.count}@${this.probability}"
+        }else {
+            return "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
+        }
     }
 
 }

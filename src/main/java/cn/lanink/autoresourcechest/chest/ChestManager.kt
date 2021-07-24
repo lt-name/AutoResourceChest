@@ -1,6 +1,7 @@
 package cn.lanink.autoresourcechest.chest
 
 import cn.lanink.autoresourcechest.AutoResourceChest
+import cn.lanink.autoresourcechest.item.FixedItem
 import cn.lanink.autoresourcechest.item.RandomItem
 import cn.nukkit.Server
 import cn.nukkit.item.Item
@@ -18,32 +19,42 @@ class ChestManager(val name: String, private val config: Config) {
     var refreshInterval: Int = config.getInt("刷新间隔(s)")
     var restrictOpenCount: Int = config.getInt("限制打开次数", -1)
     var maxRandomItemCount: Int = config.getInt("随机物品种类数量限制")
-    var fixedItems = ArrayList<Item>()
+    var fixedItems = ArrayList<FixedItem>()
     var randomItems = ArrayList<RandomItem>()
     val chests: MutableMap<Position, Chest> = HashMap()
 
     init {
-        for (stringItem in config.getStringList("fixedItem")) {
-            val split = stringItem.split("&")
-            val item = Item.fromString(split[0])
-            item.setCount(split[1].toInt())
-            this.fixedItems.add(item)
-        }
-        for (stringItem in config.getStringList("randomItem")) {
-            this.randomItems.add(RandomItem(stringItem!!))
-        }
-        for (pos in config.getStringList("pos")) {
-            val split = pos.split(":")
-            if (!Server.getInstance().loadLevel(split[3])) {
-                AutoResourceChest.instance?.logger?.warning("世界：$split[3] 加载失败！")
-                continue
+        for (stringItem in this.config.getStringList("fixedItem")) {
+            try {
+                this.fixedItems.add(FixedItem(stringItem))
+            }catch (e: Exception) {
+                AutoResourceChest.instance?.logger?.error("读取固定刷新物品 $stringItem 时出现错误，请检查配置文件：Chests/${this.name}.yml！", e)
             }
-            val position = Position(
-                split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
-                Server.getInstance().getLevelByName(split[3])
-            )
-            position.chunk.load()
-            this.chests[position] = Chest(this, position)
+        }
+        for (stringItem in this.config.getStringList("randomItem")) {
+            try {
+                this.randomItems.add(RandomItem(stringItem!!))
+            }catch (e: Exception) {
+                AutoResourceChest.instance?.logger?.error("读取随机刷新物品 $stringItem 时出现错误，请检查配置文件：Chests/${this.name}.yml！", e)
+            }
+
+        }
+        for (pos in this.config.getStringList("pos")) {
+            try {
+                val split = pos.split(":")
+                if (!Server.getInstance().loadLevel(split[3])) {
+                    AutoResourceChest.instance?.logger?.warning("世界：$split[3] 加载失败！")
+                    continue
+                }
+                val position = Position(
+                    split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
+                    Server.getInstance().getLevelByName(split[3])
+                )
+                position.chunk.load()
+                this.chests[position] = Chest(this, position)
+            }catch (e: Exception) {
+                AutoResourceChest.instance?.logger?.error("读取资源箱坐标 $pos 时出现异常，请检查配置文件：Chests/${this.name}.yml！", e)
+            }
         }
     }
 
@@ -54,8 +65,8 @@ class ChestManager(val name: String, private val config: Config) {
         this.config.set("随机物品种类数量限制", this.maxRandomItemCount)
 
         val fixedItemList = mutableListOf<String>()
-        for (item: Item in this.fixedItems) {
-            fixedItemList.add("${item.id}:${item.damage}&${item.count}")
+        for (fixedItem: FixedItem in this.fixedItems) {
+            fixedItemList.add(fixedItem.toString())
         }
         this.config.set("fixedItem", fixedItemList)
 
@@ -104,7 +115,11 @@ class ChestManager(val name: String, private val config: Config) {
     }
 
     fun getFixedItems(): List<Item> {
-        return ArrayList<Item>(this.fixedItems)
+        val list = ArrayList<Item>()
+        for (item in this.fixedItems) {
+            list.add(item.item.clone())
+        }
+        return list
     }
 
     fun getRandomItems(): List<Item> {

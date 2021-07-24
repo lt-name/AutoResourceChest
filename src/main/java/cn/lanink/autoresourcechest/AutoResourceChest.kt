@@ -80,19 +80,18 @@ class AutoResourceChest : PluginBase() {
     }
 
     override fun onDisable() {
+        var count = 0
         for (chestManager in this.chestConfigMap.values) {
             chestManager.saveConfig()
             chestManager.closeAllChest()
+            count++
         }
+        this.logger.info("成功保存 $count 个资源箱配置")
         this.playerConfigManager.saveAllPlayerConfig()
+        this.logger.info("卸载完成！")
     }
 
-    override fun onCommand(
-        player: CommandSender?,
-        command: Command?,
-        label: String?,
-        args: Array<out String>?
-    ): Boolean {
+    override fun onCommand(player: CommandSender?, command: Command?, label: String?, args: Array<out String>?): Boolean {
         player ?: return false
         command ?: return false
         if (command.name == "autoresourcechest" || command.name == "arc") {
@@ -144,11 +143,12 @@ class AutoResourceChest : PluginBase() {
                             player.sendMessage("普通物品无需保存！可直接使用物品ID：${item.id}:${item.damage}")
                             return true
                         }
-                        if (this.getNbtConfig().keys.contains(name)) {
+                        val config = this.getNbtConfig()
+                        if (config.keys.contains(name)) {
                             player.sendMessage("NBT物品：$name 已存在！换个名字吧！")
                         }else {
-                            this.getNbtConfig().set(name, "${item.id}:${item.damage}:${Utils.bytesToBase64(item.compoundTag)}")
-                            this.getNbtConfig().save()
+                            config.set(name, "${item.id}:${item.damage}:${Utils.bytesToBase64(item.compoundTag)}")
+                            config.save()
                             player.sendMessage("NBT物品：$name 保存成功！")
                         }
                     }else{
@@ -162,6 +162,7 @@ class AutoResourceChest : PluginBase() {
                     }
                     this.chestConfigMap.clear()
                     this.loadAllChests()
+                    player.sendMessage("已重载资源箱配置！请在后台查看详情！")
                 }
 
                 else -> {
@@ -198,7 +199,7 @@ class AutoResourceChest : PluginBase() {
 
     fun getNbtConfig(): Config {
         if (this.nbtConfig == null) {
-            this.nbtConfig = Config("$dataFolder/nbtItem.yml")
+            this.nbtConfig = Config("$dataFolder/nbtItem.yml", Config.YAML)
         }
         return this.nbtConfig!!
     }
