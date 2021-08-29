@@ -11,8 +11,11 @@ import cn.nukkit.event.EventPriority
 import cn.nukkit.event.Listener
 import cn.nukkit.event.block.BlockBreakEvent
 import cn.nukkit.event.block.BlockPlaceEvent
+import cn.nukkit.event.inventory.InventoryTransactionEvent
 import cn.nukkit.event.player.PlayerInteractEvent
 import cn.nukkit.event.player.PlayerQuitEvent
+import cn.nukkit.inventory.ChestInventory
+import cn.nukkit.inventory.transaction.action.SlotChangeAction
 import cn.nukkit.level.Position
 
 /**
@@ -99,6 +102,26 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                         playerConfig.addOpenCount(block)
                         this.logCache[player]?.remove(block)
                     }, chest.chestManager.refreshInterval/2 * 20)
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    fun onInventoryTransaction(event: InventoryTransactionEvent) {
+        val transaction = event.transaction
+        for (inv in transaction.inventories) {
+            if (inv is ChestInventory) {
+                val chest: Chest = this.autoResourceChest.getChestByPos(inv.holder) ?: return
+                if (chest.chestManager.canBePutIn) {
+                    return
+                }
+                for (action in transaction.actions) {
+                    if (action is SlotChangeAction) {
+                        if (action.inventory == inv && action.targetItem.id != 0) {
+                            event.isCancelled = true
+                        }
+                    }
                 }
             }
         }

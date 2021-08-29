@@ -16,6 +16,7 @@ import lombok.EqualsAndHashCode
 class ChestManager(val name: String, private val config: Config) {
 
     var showName: String = config.getString("showName")
+    var canBePutIn: Boolean = config.getBoolean("玩家可以放入物品")
     var refreshInterval: Int = config.getInt("刷新间隔(s)")
     var restrictOpenCount: Int = config.getInt("限制打开次数", -1)
     var maxRandomItemCount: Int = config.getInt("随机物品种类数量限制")
