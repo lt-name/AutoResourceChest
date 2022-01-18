@@ -34,7 +34,7 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
     fun onBlockPlace(event: BlockPlaceEvent) {
         val player = event.player ?: return
         val block = event.block ?: return
-        if (block.id != Block.CHEST) {
+        if (!this.autoResourceChest.isSupportChest(block)) {
             return
         }
         val chestManager = this.autoResourceChest.placeChestPlayer[player] ?: return
