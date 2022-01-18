@@ -48,7 +48,7 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
     fun onBlockBreak(event: BlockBreakEvent) {
         val player = event.player ?: return
         val block = event.block ?: return
-        if (block.id == Block.CHEST) {
+        if (this.autoResourceChest.isSupportChest(block)) {
             val chest = this.autoResourceChest.getChestByPos(block) ?: return
             if (player.isOp) {
                 val chestManager = chest.chestManager
@@ -70,7 +70,7 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
     fun onPlayerInteract(event: PlayerInteractEvent) {
         val player = event.player ?: return
         val block = event.block ?: return
-        if (block.id == Block.CHEST && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+        if (this.autoResourceChest.isSupportChest(block) && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             val chest: Chest = this.autoResourceChest.getChestByPos(block) ?: return
             val playerConfig = this.autoResourceChest.playerConfigManager.getPlayerConfig(player)
             if (player.isSneaking && player.isOp) {

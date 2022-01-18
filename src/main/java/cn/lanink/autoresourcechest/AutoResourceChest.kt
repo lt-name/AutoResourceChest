@@ -7,6 +7,8 @@ import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
 import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.Player
+import cn.nukkit.block.Block
+import cn.nukkit.block.BlockID
 import cn.nukkit.command.Command
 import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
@@ -33,7 +35,7 @@ class AutoResourceChest : PluginBase() {
         val RANDOM = Random()
         @JvmStatic
         val GSON = Gson()
-        const val VERSION = "?"
+        const val VERSION = "0.3.1-SNAPSHOT git-5d9e949"
         var debug = false
         var instance: AutoResourceChest? = null
     }
@@ -212,6 +214,10 @@ class AutoResourceChest : PluginBase() {
             }
         }
         return null
+    }
+
+    fun isSupportChest(block: Block): Boolean {
+        return block.id == BlockID.CHEST || block.id == BlockID.TRAPPED_CHEST
     }
 
 }
