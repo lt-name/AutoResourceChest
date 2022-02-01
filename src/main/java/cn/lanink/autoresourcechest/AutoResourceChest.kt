@@ -35,7 +35,7 @@ class AutoResourceChest : PluginBase() {
         val RANDOM = Random()
         @JvmStatic
         val GSON = Gson()
-        const val VERSION = "0.3.1-SNAPSHOT git-5d9e949"
+        const val VERSION = "?"
         var debug = false
         var instance: AutoResourceChest? = null
     }

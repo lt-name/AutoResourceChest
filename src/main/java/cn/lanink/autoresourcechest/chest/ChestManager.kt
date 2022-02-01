@@ -51,7 +51,7 @@ class ChestManager(val name: String, private val config: Config) {
                     split[0].toDouble(), split[1].toDouble(), split[2].toDouble(),
                     Server.getInstance().getLevelByName(split[3])
                 )
-                position.chunk.load()
+                position.chunk?.load()
                 this.chests[position] = Chest(this, position)
             }catch (e: Exception) {
                 AutoResourceChest.instance?.logger?.error("读取资源箱坐标 $pos 时出现异常，请检查配置文件：Chests/${this.name}.yml！", e)
