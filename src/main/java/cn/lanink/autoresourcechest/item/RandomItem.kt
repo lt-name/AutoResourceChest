@@ -4,6 +4,7 @@ import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.AutoResourceChest.Companion.RANDOM
 import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.item.Item
+import cn.nukkit.item.ItemString
 import lombok.AllArgsConstructor
 import lombok.EqualsAndHashCode
 
@@ -21,7 +22,7 @@ class RandomItem: BaseItem {
         val split1 = split[0].split(":")
         val split2 = split[1].split("@")
         this.probability = split2[1].toInt()
-        if (split1[1] == "nbt") {
+        if (split1.size >= 2 && split1[1] == "nbt") {
             this.nbtItemName = split1[0]
             val nbtItemString = AutoResourceChest.instance?.getNbtConfig()?.getString(this.nbtItemName)
             if (nbtItemString == null || nbtItemString == "") {
@@ -48,10 +49,13 @@ class RandomItem: BaseItem {
     }
 
     override fun toString(): String {
-        if (this.isNbtItem()) {
-            return "${this.nbtItemName}:nbt&${this.item.count}@${this.probability}"
+        return if (this.isNbtItem()) {
+            "${this.nbtItemName}:nbt&${this.item.count}@${this.probability}"
         }else {
-            return "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
+            if (this.item is ItemString) {
+                return "${this.item.namespaceId}&${this.item.count}@${this.probability}"
+            }
+            "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
         }
     }
 

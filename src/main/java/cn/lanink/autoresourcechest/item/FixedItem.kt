@@ -3,6 +3,7 @@ package cn.lanink.autoresourcechest.item
 import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.item.Item
+import cn.nukkit.item.ItemString
 
 /**
  * @author lt_name
@@ -12,7 +13,7 @@ class FixedItem: BaseItem {
     constructor(string: String) {
         val split = string.split("&")
         val split1 = split[0].split(":")
-        if (split1[1] == "nbt") {
+        if (split1.size >= 2 && split1[1] == "nbt") {
             this.nbtItemName = split1[0]
             val nbtItemString = AutoResourceChest.instance?.getNbtConfig()?.getString(this.nbtItemName)
             if (nbtItemString == null || nbtItemString == "") {
@@ -33,10 +34,13 @@ class FixedItem: BaseItem {
     }
 
     override fun toString(): String {
-        if (this.isNbtItem()) {
-            return "${this.nbtItemName}:nbt&${this.item.count}"
-        }else{
-            return "${this.item.id}:${this.item.damage}&${this.item.count}"
+        return if (this.isNbtItem()) {
+            "${this.nbtItemName}:nbt&${this.item.count}"
+        }else {
+            if (this.item is ItemString) {
+                return "${this.item.namespaceId}&${this.item.count}"
+            }
+            "${this.item.id}:${this.item.damage}&${this.item.count}"
         }
     }
 

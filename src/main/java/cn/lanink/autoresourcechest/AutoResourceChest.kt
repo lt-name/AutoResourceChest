@@ -96,7 +96,7 @@ class AutoResourceChest : PluginBase() {
     override fun onCommand(player: CommandSender?, command: Command?, label: String?, args: Array<out String>?): Boolean {
         player ?: return false
         command ?: return false
-        if (command.name == "autoresourcechest" || command.name == "arc") {
+        if ((command.name == "autoresourcechest") || (command.name == "arc")) {
             if (player !is Player) {
                 player.sendMessage("§e>> §c请在游戏内使用此命令")
                 return true
@@ -106,7 +106,7 @@ class AutoResourceChest : PluginBase() {
                 return true
             }
 
-            when(args[0].toLowerCase()) {
+            when(args[0].lowercase(Locale.getDefault())) {
                 "create" -> {
                     if (args.size > 1) {
                         val name = args[1]
@@ -137,7 +137,7 @@ class AutoResourceChest : PluginBase() {
                     }
                 }
 
-                "saveItem".toLowerCase() -> {
+                "saveItem".lowercase(Locale.getDefault()) -> {
                     if (args.size > 1) {
                         val name = args[1]
                         val item = player.inventory.itemInHand
