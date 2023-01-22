@@ -4,7 +4,6 @@ import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.AutoResourceChest.Companion.RANDOM
 import cn.lanink.autoresourcechest.utils.Utils
 import cn.nukkit.item.Item
-import cn.nukkit.item.ItemString
 import lombok.AllArgsConstructor
 import lombok.EqualsAndHashCode
 
@@ -52,7 +51,7 @@ class RandomItem: BaseItem {
         return if (this.isNbtItem()) {
             "${this.nbtItemName}:nbt&${this.item.count}@${this.probability}"
         }else {
-            if (this.item is ItemString) {
+            if (this.item.id == 255) {
                 return "${this.item.namespaceId}&${this.item.count}@${this.probability}"
             }
             "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
