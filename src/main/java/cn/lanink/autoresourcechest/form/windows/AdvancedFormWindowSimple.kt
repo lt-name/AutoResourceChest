@@ -1,6 +1,5 @@
 package cn.lanink.autoresourcechest.form.windows
 
-import cn.lanink.autoresourcechest.AutoResourceChest.Companion.GSON
 import cn.lanink.autoresourcechest.form.element.ResponseElementButton
 import cn.nukkit.Player
 import cn.nukkit.form.element.ElementButton

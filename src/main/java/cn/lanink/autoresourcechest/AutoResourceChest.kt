@@ -14,7 +14,6 @@ import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
-import com.google.gson.Gson
 import java.io.File
 import java.util.*
 
@@ -33,9 +32,7 @@ class AutoResourceChest : PluginBase() {
     companion object {
         @JvmStatic
         val RANDOM = Random()
-        @JvmStatic
-        val GSON = Gson()
-        const val VERSION = "?"
+        const val VERSION = "0.3.1-SNAPSHOT git-2ca8d99"
         var debug = false
         var instance: AutoResourceChest? = null
     }

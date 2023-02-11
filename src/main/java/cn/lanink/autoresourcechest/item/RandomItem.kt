@@ -51,10 +51,7 @@ class RandomItem: BaseItem {
         return if (this.isNbtItem()) {
             "${this.nbtItemName}:nbt&${this.item.count}@${this.probability}"
         }else {
-            if (this.item.id == 255) {
-                return "${this.item.namespaceId}&${this.item.count}@${this.probability}"
-            }
-            "${this.item.id}:${this.item.damage}&${this.item.count}@${this.probability}"
+            return "${this.item.namespaceId}&${this.item.count}@${this.probability}"
         }
     }
 
