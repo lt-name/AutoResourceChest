@@ -32,7 +32,7 @@ class AutoResourceChest : PluginBase() {
     companion object {
         @JvmStatic
         val RANDOM = Random()
-        const val VERSION = "0.3.1-SNAPSHOT git-2ca8d99"
+        const val VERSION = "?"
         var debug = false
         var instance: AutoResourceChest? = null
     }
@@ -67,12 +67,12 @@ class AutoResourceChest : PluginBase() {
     }
 
     override fun onEnable() {
-        this.loadAllChests()
         this.server.pluginManager.registerEvents(FormListener(), this)
         this.server.pluginManager.registerEvents(OnListener(this), this)
         this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
         this.logger.info("加载完成！版本:$VERSION")
         this.server.scheduler.scheduleTask(this) {
+            this.loadAllChests()
             this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
         }
 
