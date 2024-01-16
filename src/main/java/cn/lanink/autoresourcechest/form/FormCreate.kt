@@ -1,12 +1,12 @@
 package cn.lanink.autoresourcechest.form
 
 import cn.lanink.autoresourcechest.chest.ChestManager
-import cn.lanink.autoresourcechest.form.element.ResponseElementButton
-import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowCustom
-import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowModal
-import cn.lanink.autoresourcechest.form.windows.AdvancedFormWindowSimple
 import cn.lanink.autoresourcechest.item.FixedItem
 import cn.lanink.autoresourcechest.item.RandomItem
+import cn.lanink.gamecore.form.element.ResponseElementButton
+import cn.lanink.gamecore.form.windows.AdvancedFormWindowCustom
+import cn.lanink.gamecore.form.windows.AdvancedFormWindowModal
+import cn.lanink.gamecore.form.windows.AdvancedFormWindowSimple
 import cn.nukkit.Player
 import cn.nukkit.form.element.ElementInput
 import cn.nukkit.item.Item
@@ -20,7 +20,7 @@ class FormCreate {
 
         fun sendChestSetMenu(player: Player, chestManager: ChestManager) {
             val simple = AdvancedFormWindowSimple("设置资源箱")
-            simple.addButton(ResponseElementButton("设置基础配置").onClicked{p -> sendChestSetConfig(p, chestManager)})
+            simple.addButton(ResponseElementButton("设置基础配置").onClicked{ p -> sendChestSetConfig(p, chestManager)})
             simple.addButton(ResponseElementButton("设置固定刷新物品").onClicked{p -> sendChestSetFixedItem(p, chestManager)})
             simple.addButton(ResponseElementButton("设置随机刷新物品").onClicked{p -> sendChestSetRandomItem(p, chestManager)})
             player.showFormWindow(simple)
