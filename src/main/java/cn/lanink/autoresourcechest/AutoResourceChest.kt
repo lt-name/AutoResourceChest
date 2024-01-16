@@ -2,11 +2,11 @@ package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.chest.ChestManager
-import cn.lanink.autoresourcechest.form.FormListener
 import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
 import cn.lanink.autoresourcechest.task.WorldChestCheckTask
 import cn.lanink.autoresourcechest.utils.Utils
+import cn.lanink.gamecore.utils.ConfigUtils
 import cn.nukkit.Player
 import cn.nukkit.block.Block
 import cn.nukkit.block.BlockID
@@ -15,7 +15,6 @@ import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
-import com.google.gson.Gson
 import java.io.File
 import java.util.*
 import kotlin.collections.HashMap
@@ -35,13 +34,12 @@ class AutoResourceChest : PluginBase() {
     companion object {
         @JvmStatic
         val RANDOM = Random()
-        @JvmStatic
-        val GSON = Gson()
-        const val VERSION = "0.3.1-SNAPSHOT git-2ca8d99"
+        const val VERSION = "?"
         var debug = false
         var instance: AutoResourceChest? = null
     }
 
+    @Override
     override fun onLoad() {
         instance = this
 
@@ -73,12 +71,16 @@ class AutoResourceChest : PluginBase() {
             this.config.set("autoWorld", HashMap<String, String>())
             this.config.save()
         }
+
+        val description = Config()
+        description.load(this.getResource("Description/config.yml"))
+        ConfigUtils.addDescription(this.config, description)
     }
 
+    @Override
     override fun onEnable() {
         this.loadAllChests()
 
-        this.server.pluginManager.registerEvents(FormListener(), this)
         this.server.pluginManager.registerEvents(OnListener(this), this)
 
         this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
@@ -97,6 +99,7 @@ class AutoResourceChest : PluginBase() {
         }
     }
 
+    @Override
     override fun onDisable() {
         var count = 0
         for (chestManager in this.chestConfigMap.values) {
@@ -109,6 +112,7 @@ class AutoResourceChest : PluginBase() {
         this.logger.info("卸载完成！")
     }
 
+    @Override
     override fun onCommand(player: CommandSender?, command: Command?, label: String?, args: Array<out String>?): Boolean {
         player ?: return false
         command ?: return false
