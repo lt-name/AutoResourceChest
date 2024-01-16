@@ -8,6 +8,7 @@ import cn.nukkit.item.Item
 import cn.nukkit.level.Position
 import cn.nukkit.utils.Config
 import lombok.EqualsAndHashCode
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lt_name
@@ -22,7 +23,7 @@ class ChestManager(val name: String, private val config: Config) {
     var maxRandomItemCount: Int = config.getInt("随机物品种类数量限制")
     var fixedItems = ArrayList<FixedItem>()
     var randomItems = ArrayList<RandomItem>()
-    val chests: MutableMap<Position, Chest> = HashMap()
+    val chests: MutableMap<Position, Chest> = ConcurrentHashMap()
 
     init {
         for (stringItem in this.config.getStringList("fixedItem")) {
@@ -95,6 +96,15 @@ class ChestManager(val name: String, private val config: Config) {
         val newPos = position.clone()
         this.chests[newPos] = Chest(this, newPos)
         return true
+    }
+
+    fun removeChest(position: Position): Boolean {
+        val chest = this.chests.remove(position)
+        if (chest != null) {
+            chest.close()
+            return true
+        }
+        return false;
     }
 
     fun removeChest(chest: Chest): Boolean {

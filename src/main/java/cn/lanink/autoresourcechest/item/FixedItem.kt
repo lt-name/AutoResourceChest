@@ -36,9 +36,9 @@ class FixedItem: BaseItem {
         return if (this.isNbtItem()) {
             "${this.nbtItemName}:nbt&${this.item.count}"
         }else {
-            if (this.item.id == 255) {
+            /*if (this.item.id == 255) {
                 return "${this.item.namespaceId}&${this.item.count}"
-            }
+            }*/
             "${this.item.id}:${this.item.damage}&${this.item.count}"
         }
     }
