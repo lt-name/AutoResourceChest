@@ -2,7 +2,9 @@ package cn.lanink.autoresourcechest.item
 
 import cn.lanink.autoresourcechest.AutoResourceChest
 import cn.lanink.autoresourcechest.utils.Utils
+import cn.lanink.gamecore.utils.NukkitTypeUtils
 import cn.nukkit.item.Item
+import cn.nukkit.item.StringItem
 
 /**
  * @author lt_name
@@ -36,9 +38,11 @@ class FixedItem: BaseItem {
         return if (this.isNbtItem()) {
             "${this.nbtItemName}:nbt&${this.item.count}"
         }else {
-            /*if (this.item.id == 255) {
-                return "${this.item.namespaceId}&${this.item.count}"
-            }*/
+            if (NukkitTypeUtils.getNukkitType() == NukkitTypeUtils.NukkitType.MOT) {
+                if (this.item is StringItem) {
+                    return "${this.item.namespaceId}&${this.item.count}"
+                }
+            }
             "${this.item.id}:${this.item.damage}&${this.item.count}"
         }
     }
