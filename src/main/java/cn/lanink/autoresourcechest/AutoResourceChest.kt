@@ -79,24 +79,25 @@ class AutoResourceChest : PluginBase() {
 
     @Override
     override fun onEnable() {
-        this.loadAllChests()
-
         this.server.pluginManager.registerEvents(OnListener(this), this)
 
         this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
-        val autoWorld = this.config.get("autoWorld", HashMap<String, String>())
-        if (autoWorld.isNotEmpty()) {
-            this.server.scheduler.scheduleRepeatingTask(
-                this,
-                WorldChestCheckTask(this, autoWorld),
-                20, true
-            )
+        this.server.scheduler.scheduleTask(this) { //所有插件加载完后再加载资源箱，防止自定义物品出问题
+            this.loadAllChests()
+
+            val autoWorld = this.config.get("autoWorld", HashMap<String, String>())
+            if (autoWorld.isNotEmpty()) {
+                this.server.scheduler.scheduleRepeatingTask(
+                    this,
+                    WorldChestCheckTask(this, autoWorld),
+                    20, true
+                )
+            }
+
+            this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
         }
 
         this.logger.info("加载完成！版本:$VERSION")
-        this.server.scheduler.scheduleTask(this) {
-            this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
-        }
     }
 
     @Override

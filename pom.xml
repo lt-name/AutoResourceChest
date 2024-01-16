@@ -6,15 +6,15 @@
 
     <groupId>cn.lanink</groupId>
     <artifactId>AutoResourceChest</artifactId>
-    <version>0.4.0-PNX<!-- -SNAPSHOT--></version>
+    <version>0.4.1-PNX-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <lib.GameCore.version>1.6.12</lib.GameCore.version>
+        <lib.GameCore.version>1.6.12-PNX</lib.GameCore.version>
     </properties>
 
     <build>
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>cn.powernukkitx</groupId>
             <artifactId>powernukkitx</artifactId>
-            <version>1.19.60-r1</version>
+            <version>1.20.40-r1</version>
             <scope>provided</scope>
         </dependency>
 
