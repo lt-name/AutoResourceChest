@@ -1,12 +1,1 @@
-#
-
-# 自动把箱子转换为资源箱的世界
-# 格式：
-# autoWorld:
-#   世界名称: 资源箱配置名称
-# 例如:
-# autoWorld:
-#   world: test
 autoWorld: {}
-
----
