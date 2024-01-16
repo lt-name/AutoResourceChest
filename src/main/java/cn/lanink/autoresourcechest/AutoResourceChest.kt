@@ -2,10 +2,11 @@ package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.chest.ChestManager
-import cn.lanink.autoresourcechest.form.FormListener
 import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
+import cn.lanink.autoresourcechest.task.WorldChestCheckTask
 import cn.lanink.autoresourcechest.utils.Utils
+import cn.lanink.gamecore.utils.ConfigUtils
 import cn.nukkit.Player
 import cn.nukkit.block.Block
 import cn.nukkit.block.BlockID
@@ -16,6 +17,7 @@ import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
 import java.io.File
 import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * @author lt_name
@@ -37,11 +39,11 @@ class AutoResourceChest : PluginBase() {
         var instance: AutoResourceChest? = null
     }
 
+    @Override
     override fun onLoad() {
         instance = this
 
         this.saveDefaultConfig()
-        this.saveResource("playerUseChestLog.yml")
 
         val file1 = File("$dataFolder/Chests")
         if (!file1.exists() && !file1.mkdirs()) {
@@ -64,20 +66,40 @@ class AutoResourceChest : PluginBase() {
 
             }
         }
-    }
 
-    override fun onEnable() {
-        this.server.pluginManager.registerEvents(FormListener(), this)
-        this.server.pluginManager.registerEvents(OnListener(this), this)
-        this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
-        this.logger.info("加载完成！版本:$VERSION")
-        this.server.scheduler.scheduleTask(this) {
-            this.loadAllChests()
-            this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
+        if (!this.config.exists("autoWorld")) {
+            this.config.set("autoWorld", HashMap<String, String>())
+            this.config.save()
         }
 
+        val description = Config()
+        description.load(this.getResource("Description/config.yml"))
+        ConfigUtils.addDescription(this.config, description)
     }
 
+    @Override
+    override fun onEnable() {
+        this.loadAllChests()
+
+        this.server.pluginManager.registerEvents(OnListener(this), this)
+
+        this.server.scheduler.scheduleRepeatingTask(this, ChestUpdateTask(this), 20)
+        val autoWorld = this.config.get("autoWorld", HashMap<String, String>())
+        if (autoWorld.isNotEmpty()) {
+            this.server.scheduler.scheduleRepeatingTask(
+                this,
+                WorldChestCheckTask(this, autoWorld),
+                20, true
+            )
+        }
+
+        this.logger.info("加载完成！版本:$VERSION")
+        this.server.scheduler.scheduleTask(this) {
+            this.logger.warning("AutoResourceChest 是一款免费插件，开源链接: https://github.com/lt-name/AutoResourceChest")
+        }
+    }
+
+    @Override
     override fun onDisable() {
         var count = 0
         for (chestManager in this.chestConfigMap.values) {
@@ -90,6 +112,7 @@ class AutoResourceChest : PluginBase() {
         this.logger.info("卸载完成！")
     }
 
+    @Override
     override fun onCommand(player: CommandSender?, command: Command?, label: String?, args: Array<out String>?): Boolean {
         player ?: return false
         command ?: return false

@@ -18,6 +18,11 @@ class PlayerConfig(val name: String, val config: Config) {
         this.openChestLog.putAll(this.config.get("openChestLog", HashMap()))
     }
 
+    /**
+     * 获取玩家在某个位置打开资源箱的次数
+     *
+     * @param position 位置
+     */
     fun getOpenCount(position: Position): Int {
         return this.getOpenCount("${position.x}:${position.y}:${position.z}:${position.level.name}")
     }
