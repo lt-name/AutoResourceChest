@@ -15,11 +15,16 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
 
     private var closed: Boolean = false
     var time = this.chestManager.refreshInterval
-    private var text: EntityText
+
+    private var enableFloatingText: Boolean = false
+    private var text: EntityText? = null
     var isNeedRefresh = false
 
     init {
-        this.text = EntityText(this.position)
+        if (chestManager.showName.isNotBlank()) {
+            enableFloatingText = true
+            this.text = EntityText(this.position)
+        }
         this.refreshInventory()
     }
 
@@ -35,21 +40,31 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
                 this.isNeedRefresh = false
             }
         }
-        if (this.text.isClosed) {
+        if (this.enableFloatingText) {
+            this.updateFloatingText()
+        }
+    }
+
+    private fun updateFloatingText() {
+        if (text == null) {
+            return
+        }
+
+        if (this.text!!.isClosed) {
             this.text = EntityText(this.position)
         }
         //仅调整浮空字的位置
-        this.text.setPosition(position.add(0.5, 1.0, 0.5))
+        this.text!!.setPosition(position.add(0.5, 1.0, 0.5))
         if (this.isNeedRefresh) {
-            this.text.nameTag = this.chestManager.showName.replace("%time%", formatTime(time))
+            this.text!!.nameTag = this.chestManager.showName.replace("%time%", formatTime(time))
         }else {
-            this.text.nameTag = this.chestManager.showName.replace("%time%", "已刷新")
+            this.text!!.nameTag = this.chestManager.showName.replace("%time%", "已刷新")
         }
-        for (player in this.text.getLevel().players.values) {
-            if (player.getLevel() !== this.text.getLevel() || player.distance(this.position) > 5) {
-                this.text.despawnFrom(player)
+        for (player in this.text!!.getLevel().players.values) {
+            if (player.getLevel() !== this.text!!.getLevel() || player.distance(this.position) > 5) {
+                this.text!!.despawnFrom(player)
             } else {
-                this.text.spawnTo(player)
+                this.text!!.spawnTo(player)
             }
         }
     }
@@ -71,7 +86,7 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
 
     fun close() {
         this.closed = true
-        this.text.close()
+        this.text?.close()
         val blockEntity = this.position.getLevel().getBlockEntity(this.position)
         if (blockEntity != null && blockEntity is BlockEntityChest) {
             blockEntity.inventory.clearAll()
