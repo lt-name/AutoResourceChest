@@ -16,6 +16,7 @@ import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
+import updata.AutoData
 import java.io.File
 import java.util.*
 import kotlin.collections.HashMap
@@ -43,6 +44,16 @@ class AutoResourceChest : PluginBase() {
     @Override
     override fun onLoad() {
         instance = this
+
+        try {
+            if (server.pluginManager.getPlugin("AutoUpData") != null) {
+                if (AutoData.defaultUpDataByMaven(this, this.file, "cn.lanink", "AutoResourceChest", "")) {
+                    return
+                }
+            }
+        } catch (t: Throwable) {
+            this.logger.warning("")
+        }
 
         this.saveDefaultConfig()
 
