@@ -8,14 +8,6 @@ depend:
   - "KotlinLib"
   - "MemoriesOfTime-GameCore"
 
-commands:
-  autoresourcechest:
-    aliases:
-      - "arc"
-    usage: "/autoresourcechest help 查看命令帮助"
-    description: "AutoResourceChest 管理命令"
-    permission: autoresourcechest.admin
-
 permissions:
   autoresourcechest.admin:
     default: op
