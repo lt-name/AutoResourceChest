@@ -93,13 +93,13 @@ class ChestManager(val name: String, private val config: Config) {
                 return false
             }
         }
-        val newPos = position.clone()
+        val newPos = position.clone().floor()
         this.chests[newPos] = Chest(this, newPos)
         return true
     }
 
     fun removeChest(position: Position): Boolean {
-        val chest = this.chests.remove(position)
+        val chest = this.chests.remove(position.floor())
         if (chest != null) {
             chest.close()
             return true
@@ -152,7 +152,7 @@ class ChestManager(val name: String, private val config: Config) {
     fun getChestByPos(position: Position): Chest? {
         //需要判断level
         for ((key, value) in this.chests.entries) {
-            if (key.getLevel() === position.getLevel() && key == position) {
+            if (key.getLevel() === position.getLevel() && key == position.floor()) {
                 return value
             }
         }

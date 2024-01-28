@@ -5,6 +5,8 @@ import cn.lanink.autoresourcechest.form.FormCreate
 import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.block.Block
+import cn.nukkit.block.BlockChest
+import cn.nukkit.blockentity.BlockEntity
 import cn.nukkit.blockentity.BlockEntityChest
 import cn.nukkit.event.EventHandler
 import cn.nukkit.event.EventPriority
@@ -17,6 +19,7 @@ import cn.nukkit.event.player.PlayerQuitEvent
 import cn.nukkit.inventory.ChestInventory
 import cn.nukkit.inventory.transaction.action.SlotChangeAction
 import cn.nukkit.level.Position
+import cn.nukkit.math.BlockFace
 
 /**
  * @author lt_name
@@ -37,6 +40,28 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
         if (!this.autoResourceChest.isSupportChest(block)) {
             return
         }
+
+        //阻止大箱子
+        if (block is BlockChest) {
+            val face = intArrayOf(2, 5, 3, 4)[player.direction.horizontalIndex]
+            for (side in 2..5) {
+                if ((face == 4 || face == 5) && (side == 4 || side == 5)) {
+                    continue
+                } else if ((face == 3 || face == 2) && (side == 2 || side == 3)) {
+                    continue
+                }
+                val c: Block = block.getSide(BlockFace.fromIndex(side))
+                if (c is BlockChest && c.getDamage() == face) {
+                    val blockEntity: BlockEntity = block.level.getBlockEntity(c)
+                    if (blockEntity is BlockEntityChest && !blockEntity.isPaired) {
+                        event.setCancelled()
+                        player.sendMessage("§e>> §c资源箱不能合并为大箱子！")
+                        return
+                    }
+                }
+            }
+        }
+
         val chestManager = this.autoResourceChest.placeChestPlayer[player] ?: return
         chestManager.addNewChest(block)
         chestManager.saveConfig()

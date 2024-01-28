@@ -21,8 +21,9 @@ class WorldChestCheckTask(owner: AutoResourceChest, private val worlds : HashMap
                 for (chestManager in values) {
                     var hasChange = false
                     for (pos in chestManager.chests.keys) {
-                        if (pos.level.getBlockEntity(pos) !is BlockEntityChest) {
-                            chestManager.removeChest(chestManager.chests[pos] ?: continue)
+                        var entity = pos.level.getBlockEntity(pos)
+                        if (entity !is BlockEntityChest || entity.isPaired) {
+                            chestManager.removeChest(pos)
                             hasChange = true
                         }
                     }
@@ -37,7 +38,7 @@ class WorldChestCheckTask(owner: AutoResourceChest, private val worlds : HashMap
             val world = Server.getInstance().getLevelByName(entry.key)
             for (blockEntity : BlockEntity in world.blockEntities.values) {
                 if (blockEntity is BlockEntityChest) {
-                    if (AutoResourceChest.instance!!.getChestByPos(blockEntity) != null) {
+                    if (blockEntity.isPaired || AutoResourceChest.instance!!.getChestByPos(blockEntity) != null) {
                         continue
                     }
                     val chestManager = AutoResourceChest.instance?.chestConfigMap?.get(entry.value) ?: continue
