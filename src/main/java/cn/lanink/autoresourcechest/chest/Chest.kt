@@ -4,6 +4,8 @@ import cn.lanink.autoresourcechest.entity.EntityText
 import cn.lanink.autoresourcechest.utils.Utils.Companion.formatTime
 import cn.nukkit.block.Block
 import cn.nukkit.blockentity.BlockEntityChest
+import cn.nukkit.inventory.BaseInventory
+import cn.nukkit.item.Item
 import cn.nukkit.level.Position
 import lombok.EqualsAndHashCode
 
@@ -78,10 +80,27 @@ class Chest(val chestManager: ChestManager, private var position: Position) {
                 return
             }
         }
-        val inventory = blockEntity.inventory
+        val inventory: BaseInventory = blockEntity.inventory
         inventory.clearAll()
-        inventory.addItem(*this.chestManager.getFixedItems().toTypedArray())
-        inventory.addItem(*this.chestManager.getRandomItems().toTypedArray())
+        val itemList = mutableListOf<Item>()
+        itemList.addAll(this.chestManager.getFixedItems())
+        itemList.addAll(this.chestManager.getRandomItems())
+        for (item in itemList) {
+            if (item.id == 0) {
+                continue
+            }
+            var random: Int
+            var errorCount = 0
+            do {
+                random = (0 until inventory.size).random()
+                errorCount++
+            } while (errorCount < 20 && inventory.getItem(random).id != 0)
+            if (errorCount < 20) {
+                inventory.setItem(random, item)
+            } else {
+                inventory.addItem(item)
+            }
+        }
     }
 
     fun close() {
