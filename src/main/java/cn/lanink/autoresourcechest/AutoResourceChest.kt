@@ -6,13 +6,11 @@ import cn.lanink.autoresourcechest.command.AutoResourceChestCommand
 import cn.lanink.autoresourcechest.player.PlayerConfigManager
 import cn.lanink.autoresourcechest.task.ChestUpdateTask
 import cn.lanink.autoresourcechest.task.WorldChestCheckTask
-import cn.lanink.autoresourcechest.utils.Utils
 import cn.lanink.gamecore.utils.ConfigUtils
+import cn.lanink.gamecore.utils.VersionUtils
 import cn.nukkit.Player
 import cn.nukkit.block.Block
 import cn.nukkit.block.BlockID
-import cn.nukkit.command.Command
-import cn.nukkit.command.CommandSender
 import cn.nukkit.level.Position
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.utils.Config
@@ -37,6 +35,7 @@ class AutoResourceChest : PluginBase() {
         @JvmStatic
         val RANDOM = Random()
         const val VERSION = "?"
+        const val MINIMUM_GAME_CORE_VERSION = "?"
         var debug = false
         var instance: AutoResourceChest? = null
     }
@@ -91,6 +90,18 @@ class AutoResourceChest : PluginBase() {
 
     @Override
     override fun onEnable() {
+        val gameCore = this.server.pluginManager.plugins["MemoriesOfTime-GameCore"]
+        if (gameCore == null) {
+            this.logger.error("未找到 MemoriesOfTime-GameCore 前置插件，插件无法正常运行！")
+            this.server.pluginManager.disablePlugin(this)
+            return
+        }
+        if (!VersionUtils.checkMinimumVersion(gameCore, MINIMUM_GAME_CORE_VERSION)) {
+            this.logger.error("MemoriesOfTime-GameCore 版本过低，插件无法正常运行！")
+            this.server.pluginManager.disablePlugin(this)
+            return
+        }
+
         this.server.pluginManager.registerEvents(OnListener(this), this)
 
         this.server.commandMap.register("AutoResourceChest", AutoResourceChestCommand())

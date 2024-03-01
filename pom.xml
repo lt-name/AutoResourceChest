@@ -6,7 +6,7 @@
 
     <groupId>cn.lanink</groupId>
     <artifactId>AutoResourceChest</artifactId>
-    <version>0.4.2<!-- -SNAPSHOT--></version>
+    <version>0.4.3-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -79,13 +79,17 @@
                             </includes>
                             <replacements>
                                 <replacement>
-                                    <token>VERSION = ".*"</token>
+                                    <token>val VERSION = ".*"</token>
                                     <!--suppress UnresolvedMavenProperty -->
-                                    <value>VERSION = "${project.version} git-${git.commit.id.abbrev}"</value>
+                                    <value>val VERSION = "${project.version} git-${git.commit.id.abbrev}"</value>
                                 </replacement>
                                 <replacement>
                                     <token>version: ".*"</token>
                                     <value>version: "${project.version}"</value>
+                                </replacement>
+                                <replacement>
+                                    <token>MINIMUM_GAME_CORE_VERSION = ".*"</token>
+                                    <value>MINIMUM_GAME_CORE_VERSION = "${lib.GameCore.version}"</value>
                                 </replacement>
                             </replacements>
                         </configuration>
