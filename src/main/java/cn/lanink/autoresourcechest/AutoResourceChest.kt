@@ -35,7 +35,7 @@ class AutoResourceChest : PluginBase() {
         @JvmStatic
         val RANDOM = Random()
         const val VERSION = "?"
-        const val MINIMUM_GAME_CORE_VERSION = "?"
+        const val MINIMUM_GAME_CORE_VERSION = "1.6.12"
         var debug = false
         var instance: AutoResourceChest? = null
     }
