@@ -1,5 +1,6 @@
 package cn.lanink.autoresourcechest.entity
 
+import cn.lanink.gamecore.utils.NukkitTypeUtils
 import cn.nukkit.entity.Entity
 import cn.nukkit.level.Position
 import cn.nukkit.level.format.FullChunk
@@ -19,7 +20,12 @@ class EntityText : Entity {
         this.close()
     }
 
-    constructor(position: Position) : super(position.chunk, getDefaultNBT(position))
+    constructor(position: Position) : super(position.chunk, getDefaultNBT(position)) {
+        if (NukkitTypeUtils.getNukkitType() == NukkitTypeUtils.NukkitType.MOT
+            || NukkitTypeUtils.getNukkitType() == NukkitTypeUtils.NukkitType.POWER_NUKKIT_X) {
+            this.setCanBeSavedWithChunk(false)
+        }
+    }
 
     override fun initEntity() {
         super.initEntity()
