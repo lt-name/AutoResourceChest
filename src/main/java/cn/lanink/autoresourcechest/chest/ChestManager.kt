@@ -99,6 +99,9 @@ class ChestManager(val name: String, private val config: Config) {
             }
         }
         val newPos = position.clone().floor()
+        if (newPos.chunk == null || !newPos.getLevel().loadChunk(newPos.chunkX, newPos.chunkZ)) {
+            AutoResourceChest.instance?.logger?.error("创建资源箱失败 $position")
+        }
         this.chests[newPos] = Chest(this, newPos)
         return true
     }
