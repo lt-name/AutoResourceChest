@@ -44,7 +44,7 @@ class WorldChestCheckTask(owner: AutoResourceChest, private val worlds : HashMap
                     val chestManager = AutoResourceChest.instance?.chestConfigMap?.get(entry.value) ?: continue
                     var hasChange = false
                     if (chestManager.getChestByPos(blockEntity) == null) {
-                        chestManager.addNewChest(blockEntity)
+                        chestManager.addNewChest(blockEntity, true)
                         hasChange = true
                     }
                     if (hasChange) {

@@ -93,6 +93,10 @@ class ChestManager(val name: String, private val config: Config) {
     }
 
     fun addNewChest(position: Position): Boolean {
+        return addNewChest(position, false)
+    }
+
+    fun addNewChest(position: Position, ignoreTips: Boolean): Boolean {
         for (pos in this.chests.keys) {
             if (pos.getLevel() === position.getLevel() && pos == position) {
                 return false
@@ -100,7 +104,9 @@ class ChestManager(val name: String, private val config: Config) {
         }
         val newPos = position.clone().floor()
         if (newPos.chunk == null || !newPos.getLevel().loadChunk(newPos.chunkX, newPos.chunkZ) || newPos.chunk.provider == null) {
-            AutoResourceChest.instance?.logger?.error("创建资源箱失败 $position")
+            if (!ignoreTips) {
+                AutoResourceChest.instance?.logger?.error("创建资源箱失败 $position")
+            }
             return false
         }
         this.chests[newPos] = Chest(this, newPos)
