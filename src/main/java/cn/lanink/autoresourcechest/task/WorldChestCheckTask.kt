@@ -35,10 +35,10 @@ class WorldChestCheckTask(owner: AutoResourceChest, private val worlds : HashMap
         }
         //检查并添加新的箱子
         for (entry in this.worlds.entries) {
-            val world = Server.getInstance().getLevelByName(entry.key)
+            val world = Server.getInstance().getLevelByName(entry.key) ?: continue
             for (blockEntity : BlockEntity in world.blockEntities.values) {
                 if (blockEntity is BlockEntityChest) {
-                    if (blockEntity.isPaired || AutoResourceChest.instance!!.getChestByPos(blockEntity) != null) {
+                    if (blockEntity.closed || blockEntity.isPaired || AutoResourceChest.instance!!.getChestByPos(blockEntity) != null) {
                         continue
                     }
                     val chestManager = AutoResourceChest.instance?.chestConfigMap?.get(entry.value) ?: continue
