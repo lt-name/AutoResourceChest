@@ -37,7 +37,7 @@ class FixedItem: BaseItem {
     override fun toString(): String {
         return if (this.isNbtItem()) {
             "${this.nbtItemName}:nbt&${this.item.count}"
-        }else {
+        } else {
             if (NukkitTypeUtils.getNukkitType() == NukkitTypeUtils.NukkitType.MOT) {
                 if (this.item is StringItem) {
                     return "${this.item.namespaceId}&${this.item.count}"
