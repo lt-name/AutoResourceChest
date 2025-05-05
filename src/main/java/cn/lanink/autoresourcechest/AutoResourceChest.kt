@@ -31,6 +31,8 @@ class AutoResourceChest : PluginBase() {
 
     private var nbtConfig: Config? = null
 
+    val autoWorlds: HashMap<String, String> = HashMap()
+
     companion object {
         @JvmStatic
         val RANDOM = Random()
@@ -110,11 +112,11 @@ class AutoResourceChest : PluginBase() {
         this.server.scheduler.scheduleTask(this) { //所有插件加载完后再加载资源箱，防止自定义物品出问题
             this.loadAllChests()
 
-            val autoWorld = this.config.get("autoWorld", HashMap<String, String>())
-            if (autoWorld.isNotEmpty()) {
+            autoWorlds.putAll(this.config.get("autoWorld", HashMap<String, String>()))
+            if (autoWorlds.isNotEmpty()) {
                 this.server.scheduler.scheduleRepeatingTask(
                     this,
-                    WorldChestCheckTask(this, autoWorld),
+                    WorldChestCheckTask(this, autoWorlds),
                     20, true
                 )
             }

@@ -41,19 +41,23 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
             return
         }
 
+        val chestManager = this.autoResourceChest.placeChestPlayer[player]
+
         //阻止大箱子
-        if (block is BlockChest) {
-            val face = intArrayOf(2, 5, 3, 4)[player.direction.horizontalIndex]
-            for (side in 2..5) {
-                if ((face == 4 || face == 5) && (side == 4 || side == 5)) {
-                    continue
-                } else if ((face == 3 || face == 2) && (side == 2 || side == 3)) {
-                    continue
-                }
-                val c: Block = block.getSide(BlockFace.fromIndex(side))
-                if (c is BlockChest && c.getDamage() == face) {
-                    val blockEntity: BlockEntity = block.level.getBlockEntity(c)
-                    if (blockEntity is BlockEntityChest && !blockEntity.isPaired) {
+        val face = intArrayOf(2, 5, 3, 4)[player.direction.horizontalIndex]
+        for (side in 2..5) {
+            if ((face == 4 || face == 5) && (side == 4 || side == 5)) {
+                continue
+            } else if ((face == 3 || face == 2) && (side == 2 || side == 3)) {
+                continue
+            }
+            val c: Block = block.getSide(BlockFace.fromIndex(side))
+            if (c is BlockChest && c.getDamage() == face) {
+                val blockEntity = block.level.getBlockEntity(c)
+                if (blockEntity is BlockEntityChest && !blockEntity.isPaired) {
+                    if (this.autoResourceChest.autoWorlds.containsKey(player.level.name)
+                        || chestManager != null
+                        || this.autoResourceChest.getChestByPos(c) != null) {
                         event.setCancelled()
                         player.sendMessage("§e>> §c资源箱不能合并为大箱子！")
                         return
@@ -62,11 +66,12 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
             }
         }
 
-        val chestManager = this.autoResourceChest.placeChestPlayer[player] ?: return
-        chestManager.addNewChest(block)
-        chestManager.saveConfig()
-        this.autoResourceChest.placeChestPlayer.remove(player)
-        player.sendMessage("§e>> §a成功放置一个资源箱！")
+        if (chestManager != null) {
+            chestManager.addNewChest(block)
+            chestManager.saveConfig()
+            this.autoResourceChest.placeChestPlayer.remove(player)
+            player.sendMessage("§e>> §a成功放置一个资源箱！")
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
