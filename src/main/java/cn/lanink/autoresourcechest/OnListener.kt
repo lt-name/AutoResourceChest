@@ -2,6 +2,7 @@ package cn.lanink.autoresourcechest
 
 import cn.lanink.autoresourcechest.chest.Chest
 import cn.lanink.autoresourcechest.form.FormCreate
+import cn.lanink.autoresourcechest.task.ChestOpenAnimationTask
 import cn.nukkit.Player
 import cn.nukkit.Server
 import cn.nukkit.block.Block
@@ -30,7 +31,15 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        this.autoResourceChest.placeChestPlayer.remove(event.player ?: return)
+        val player = event.player ?: return
+        this.autoResourceChest.placeChestPlayer.remove(player)
+        for (manager in this.autoResourceChest.chestConfigMap.values) {
+            for (chest in manager.chests.values) {
+                if (chest.animatingPlayer == player) {
+                    chest.finishAnimation()
+                }
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -108,6 +117,13 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 event.setCancelled()
                 return
             }
+            if (chest.isAnimating) {
+                if (player != chest.animatingPlayer) {
+                    event.setCancelled()
+                    player.sendMessage("§e>> §c该资源箱正在被其他玩家打开，请稍后再试！")
+                    return
+                }
+            }
             if (chest.chestManager.restrictOpenCount > 0) {
                 if (playerConfig.getOpenCount(block) >= chest.chestManager.restrictOpenCount) {
                     event.setCancelled()
@@ -124,6 +140,29 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
                 }
             }else {
                 chest.isNeedRefresh = true
+                if (chest.chestManager.enableOpenAnimation && !chest.isAnimating) {
+                    val blockEntity = block.level.getBlockEntity(block) as? BlockEntityChest
+                    if (blockEntity != null) {
+                        val savedItems = chest.startOpenAnimation(blockEntity.inventory, player)
+                        val task = ChestOpenAnimationTask(
+                            this.autoResourceChest,
+                            chest,
+                            block,
+                            savedItems,
+                            blockEntity.inventory.size,
+                            chest.chestManager.animationMode,
+                            chest.chestManager.gradientTransition,
+                            chest.chestManager.animationSound,
+                            chest.chestManager.animationParticle,
+                            player
+                        )
+                        Server.getInstance().scheduler.scheduleRepeatingTask(
+                            this.autoResourceChest,
+                            task,
+                            chest.chestManager.animationSpeed
+                        )
+                    }
+                }
                 val list = this.logCache.getOrDefault(player, ArrayList())
                 if (!list.contains(block)) {
                     list.add(block)
@@ -143,6 +182,16 @@ class OnListener(val autoResourceChest: AutoResourceChest) : Listener {
         for (inv in transaction.inventories) {
             if (inv is ChestInventory) {
                 val chest: Chest = this.autoResourceChest.getChestByPos(inv.holder) ?: return
+                if (chest.isAnimating) {
+                    for (action in transaction.actions) {
+                        if (action is SlotChangeAction && action.inventory == inv) {
+                            if (!chest.revealedSlots.contains(action.slot)) {
+                                event.isCancelled = true
+                                return
+                            }
+                        }
+                    }
+                }
                 if (chest.chestManager.canBePutIn) {
                     return
                 }
